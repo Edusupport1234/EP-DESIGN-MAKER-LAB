@@ -2,16 +2,19 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
 
-// NOTE: Please replace these with your actual Firebase project config from the Firebase Console
+// Your web app's Firebase configuration from the Firebase Console
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "your-sender-id",
-  appId: "your-app-id"
+  apiKey: "AIzaSyC_IYue8EOjkWWHIi9YBM6paBv_gWKu8Ms",
+  authDomain: "ep--design-maker-lab.firebaseapp.com",
+  databaseURL: "https://ep--design-maker-lab-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "ep--design-maker-lab",
+  storageBucket: "ep--design-maker-lab.firebasestorage.app",
+  messagingSenderId: "858917668308",
+  appId: "1:858917668308:web:cf5a190782adb8d827c241",
+  measurementId: "G-V5FJNS8SES"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();

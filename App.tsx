@@ -140,8 +140,14 @@ const App: React.FC = () => {
 
           <div className="flex items-center gap-4">
              <div className="text-xs font-black text-indigo-600 uppercase tracking-widest hidden sm:block">Open Access Workspace</div>
-             <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 shadow-sm">
-               <i className="fa-solid fa-user"></i>
+             <div className="flex items-center gap-3">
+               <div className="text-right hidden sm:block">
+                 <div className="text-[10px] font-black text-slate-900 leading-none uppercase">Lab Student</div>
+                 <div className="text-[8px] font-bold text-slate-400 uppercase">Guest Mode</div>
+               </div>
+               <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 shadow-sm overflow-hidden">
+                 <i className="fa-solid fa-user"></i>
+               </div>
              </div>
           </div>
         </div>
