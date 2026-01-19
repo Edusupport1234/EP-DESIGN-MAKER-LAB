@@ -8,8 +8,8 @@ import ProjectGalleryView from './components/tabs/ProjectGalleryView';
 import LessonPathDetail from './components/LessonPathDetail';
 import ProjectDetailView from './components/ProjectDetailView';
 import ProjectCreationModal from './components/ProjectCreationModal';
-import { TabType, Project, Lesson } from './types';
-import { PROJECTS, LESSONS } from './constants';
+import { TabType, Project, Lesson, Material, DaySchedule, ScheduleItem } from './types';
+import { PROJECTS, LESSONS, MATERIALS, WEEKLY_SCHEDULE } from './constants';
 // Initialize Firebase connection on app load
 import './services/firebase';
 
@@ -20,15 +20,29 @@ const App: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   
-  // Projects State
+  // App Global State
   const [allProjects, setAllProjects] = useState<Project[]>(PROJECTS);
-  // Lessons State (for curating steps)
   const [allLessons, setAllLessons] = useState<Lesson[]>(LESSONS);
+  const [allMaterials, setAllMaterials] = useState<Material[]>(MATERIALS);
+  const [allSchedule, setAllSchedule] = useState<DaySchedule[]>(WEEKLY_SCHEDULE);
 
   const handleAddProject = (newProject: Project) => {
     setAllProjects(prev => [newProject, ...prev]);
     setActiveTab('Project Gallery');
     setIsCreatingProject(false);
+  };
+
+  const handleAddMaterial = (newMaterial: Material) => {
+    setAllMaterials(prev => [newMaterial, ...prev]);
+  };
+
+  const handleAddScheduleItem = (dayName: string, item: ScheduleItem) => {
+    setAllSchedule(prev => prev.map(day => {
+      if (day.day === dayName) {
+        return { ...day, items: [...day.items, item] };
+      }
+      return day;
+    }));
   };
 
   const handleAddLessonToGallery = (lesson: Lesson) => {
@@ -113,8 +127,19 @@ const App: React.FC = () => {
 
     switch (activeTab) {
       case 'Lab Layout': return <LabLayoutView onEnroll={startLearning} />;
-      case 'Materials': return <MaterialsView />;
-      case 'Schedule': return <ScheduleView />;
+      case 'Materials': return (
+        <MaterialsView 
+          materials={allMaterials} 
+          onAddMaterial={handleAddMaterial} 
+        />
+      );
+      case 'Schedule': return (
+        <ScheduleView 
+          schedule={allSchedule} 
+          projects={allProjects}
+          onAddItem={handleAddScheduleItem}
+        />
+      );
       case 'Project Gallery': return (
         <ProjectGalleryView 
           projects={allProjects} 

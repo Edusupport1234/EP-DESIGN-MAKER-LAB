@@ -1,11 +1,18 @@
 
 import React, { useState } from 'react';
-import { WEEKLY_SCHEDULE } from '../../constants';
-import { ScheduleItem } from '../../types';
+import { DaySchedule, ScheduleItem, Project } from '../../types';
+import ScheduleCreationModal from '../ScheduleCreationModal';
 
-const ScheduleView: React.FC = () => {
+interface ScheduleViewProps {
+  schedule: DaySchedule[];
+  projects: Project[];
+  onAddItem: (day: string, item: ScheduleItem) => void;
+}
+
+const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, projects, onAddItem }) => {
   const [selectedPreview, setSelectedPreview] = useState<ScheduleItem | null>(null);
   const [activeTypeFilter, setActiveTypeFilter] = useState<string>('All');
+  const [isAddingSchedule, setIsAddingSchedule] = useState(false);
 
   const activityTypes = [
     { label: 'Recess Time', icon: 'fa-box-open', color: 'bg-emerald-50 text-emerald-600 border-emerald-200', activeColor: 'ring-2 ring-emerald-500 bg-emerald-100' },
@@ -20,7 +27,7 @@ const ScheduleView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 relative">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="text-3xl font-bold text-slate-800 mb-2">Customer Lesson Schedule</h1>
@@ -79,7 +86,7 @@ const ScheduleView: React.FC = () => {
           </div>
         </div>
 
-        {WEEKLY_SCHEDULE.map(day => {
+        {schedule.map(day => {
           const filteredItems = day.items.filter(item => 
             activeTypeFilter === 'All' || item.type === activeTypeFilter
           );
@@ -145,6 +152,28 @@ const ScheduleView: React.FC = () => {
           );
         })}
       </div>
+
+      {/* Floating Add Schedule Button */}
+      <div className="fixed bottom-24 right-6 z-50">
+        <button 
+          onClick={() => setIsAddingSchedule(true)}
+          className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl shadow-2xl transition-all duration-300 active:scale-95 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:rotate-90 group"
+          title="Add New Lesson Slot"
+        >
+          <i className="fa-solid fa-plus"></i>
+        </button>
+      </div>
+
+      {isAddingSchedule && (
+        <ScheduleCreationModal 
+          projects={projects}
+          onClose={() => setIsAddingSchedule(false)}
+          onSave={(day, item) => {
+            onAddItem(day, item);
+            setIsAddingSchedule(false);
+          }}
+        />
+      )}
 
       {/* Preview Modal */}
       {selectedPreview && (
