@@ -5,7 +5,7 @@ export enum Difficulty {
   HARD = 'Hard'
 }
 
-export type TabType = 'Lab Layout' | 'Materials' | 'Schedule' | 'Project Gallery';
+export type TabType = 'Lab Layout' | 'Schedule' | 'Project Gallery';
 
 export interface LessonStep {
   title: string;
@@ -34,7 +34,6 @@ export interface Material {
   category: string;
   quantity: string;
   status: 'In Stock' | 'Low Stock';
-  priceRange: string;
   imageUrl: string;
   externalUrl: string;
   description?: string;

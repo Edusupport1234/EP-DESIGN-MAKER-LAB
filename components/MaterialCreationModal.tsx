@@ -47,13 +47,13 @@ const MaterialCreationModal: React.FC<MaterialCreationModalProps> = ({ onClose, 
       return;
     }
 
+    // Fix: removed 'priceRange' which is not defined in the Material interface
     const newMaterial: Material = {
       id: `m-custom-${Date.now()}`,
       name: formData.name,
       category: formData.category,
       quantity: '1 unit',
       status: 'In Stock',
-      priceRange: '', // No longer collected
       imageUrl: formData.imageUrl,
       description: formData.description,
       externalUrl: formData.externalUrl || '#'

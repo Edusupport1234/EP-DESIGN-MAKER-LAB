@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import AIAssistant from './components/AIAssistant';
 import LabLayoutView from './components/tabs/LabLayoutView';
-import MaterialsView from './components/tabs/MaterialsView';
 import ScheduleView from './components/tabs/ScheduleView';
 import ProjectGalleryView from './components/tabs/ProjectGalleryView';
 import LessonPathDetail from './components/LessonPathDetail';
@@ -30,10 +29,6 @@ const App: React.FC = () => {
     setAllProjects(prev => [newProject, ...prev]);
     setActiveTab('Project Gallery');
     setIsCreatingProject(false);
-  };
-
-  const handleAddMaterial = (newMaterial: Material) => {
-    setAllMaterials(prev => [newMaterial, ...prev]);
   };
 
   const handleAddScheduleItem = (dayName: string, item: ScheduleItem) => {
@@ -127,12 +122,6 @@ const App: React.FC = () => {
 
     switch (activeTab) {
       case 'Lab Layout': return <LabLayoutView onEnroll={startLearning} />;
-      case 'Materials': return (
-        <MaterialsView 
-          materials={allMaterials} 
-          onAddMaterial={handleAddMaterial} 
-        />
-      );
       case 'Schedule': return (
         <ScheduleView 
           schedule={allSchedule} 
@@ -182,7 +171,6 @@ const App: React.FC = () => {
         <div className="bg-white p-1.5 rounded-2xl flex items-center gap-1 shadow-sm border border-slate-100 max-w-fit mb-10 overflow-x-auto">
           {[
             { id: 'Lab Layout', icon: 'fa-hammer' },
-            { id: 'Materials', icon: 'fa-box-open' },
             { id: 'Schedule', icon: 'fa-calendar-days' },
             { id: 'Project Gallery', icon: 'fa-images' }
           ].map((tab) => (

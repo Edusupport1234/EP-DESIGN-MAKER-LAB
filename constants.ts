@@ -10,7 +10,6 @@ export const MATERIALS: Material[] = [
     category: '3D Printer', 
     quantity: '5 units', 
     status: 'In Stock',
-    priceRange: '$818.00 – $1,137.00',
     imageUrl: 'https://images.unsplash.com/photo-1633526543814-9718c8922b7a?auto=format&fit=crop&q=80&w=600',
     description: 'The Icon, Redefined. Global Version.',
     externalUrl: BASE_STORE_URL
@@ -21,7 +20,6 @@ export const MATERIALS: Material[] = [
     category: '3D Printer', 
     quantity: '3 units', 
     status: 'Low Stock',
-    priceRange: '$1,636.00 – $2,728.00',
     imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=600',
     description: 'Your Personal Industrial Grade Solution.',
     externalUrl: BASE_STORE_URL
@@ -32,7 +30,6 @@ export const MATERIALS: Material[] = [
     category: '3D Printer', 
     quantity: '12 units', 
     status: 'In Stock',
-    priceRange: '$272.00 – $454.00',
     imageUrl: 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&q=80&w=600',
     description: 'Support Multi-Color 3D Printing.',
     externalUrl: BASE_STORE_URL
@@ -43,7 +40,6 @@ export const MATERIALS: Material[] = [
     category: '3D Printer', 
     quantity: '8 units', 
     status: 'In Stock',
-    priceRange: '$399.00 – $581.00',
     imageUrl: 'https://images.unsplash.com/photo-1533150567089-915904d603a1?auto=format&fit=crop&q=80&w=600',
     description: 'Support Multi-Color 3D Printing, High Speed.',
     externalUrl: BASE_STORE_URL
@@ -54,7 +50,6 @@ export const MATERIALS: Material[] = [
     category: '3D Printer', 
     quantity: '2 units', 
     status: 'In Stock',
-    priceRange: '$1,200.00 – $1,800.00',
     imageUrl: 'https://images.unsplash.com/photo-1581092341396-d99612958c01?auto=format&fit=crop&q=80&w=600',
     description: '16 Multi Color Dual Auto Bed.',
     externalUrl: BASE_STORE_URL
@@ -65,7 +60,6 @@ export const MATERIALS: Material[] = [
     category: 'Accessories', 
     quantity: '10 units', 
     status: 'In Stock',
-    priceRange: '$349.00',
     imageUrl: 'https://images.unsplash.com/photo-1563396983906-b3795482a59a?auto=format&fit=crop&q=80&w=600',
     description: 'Multi-color printing made simple.',
     externalUrl: "https://www.eptecstore.com/product-category/accessories/"
@@ -76,7 +70,6 @@ export const MATERIALS: Material[] = [
     category: 'Coding', 
     quantity: '25 units', 
     status: 'In Stock',
-    priceRange: '$45.00 – $65.00',
     imageUrl: 'https://images.unsplash.com/photo-1553406830-ef2513450d76?auto=format&fit=crop&q=80&w=600',
     description: 'The heart of our coding curriculum.',
     externalUrl: "https://www.eptecstore.com/product-category/microcontrollers/"
@@ -87,7 +80,6 @@ export const MATERIALS: Material[] = [
     category: 'Filament', 
     quantity: '50 spools', 
     status: 'In Stock',
-    priceRange: '$18.00 – $35.00',
     imageUrl: 'https://images.unsplash.com/photo-1579762594991-49fa7567099f?auto=format&fit=crop&q=80&w=600',
     description: 'Biodegradable thermoplastic for easy printing.',
     externalUrl: "https://www.eptecstore.com/product-category/filaments/"
