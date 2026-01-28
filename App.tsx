@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AIAssistant from './components/AIAssistant';
 import LabLayoutView from './components/tabs/LabLayoutView';
@@ -27,6 +26,9 @@ const App: React.FC = () => {
   const [allLessons, setAllLessons] = useState<Lesson[]>(LESSONS);
   const [allSchedule, setAllSchedule] = useState<DaySchedule[]>(WEEKLY_SCHEDULE);
 
+  // RBAC: Check if the user is the specific admin email
+  const isEditor = user?.email === 'Edusupport@ep-asia.com';
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
@@ -46,12 +48,14 @@ const App: React.FC = () => {
   }, []);
 
   const handleAddProject = (newProject: Project) => {
+    if (!isEditor) return;
     setAllProjects(prev => [newProject, ...prev]);
     setActiveTab('Project Gallery');
     setIsCreatingProject(false);
   };
 
   const handleAddScheduleItem = (dayName: string, item: ScheduleItem) => {
+    if (!isEditor) return;
     setAllSchedule(prev => prev.map(day => {
       if (day.day === dayName) {
         return { ...day, items: [...day.items, item] };
@@ -61,6 +65,10 @@ const App: React.FC = () => {
   };
 
   const handleAddLessonToGallery = (lesson: Lesson) => {
+    if (!isEditor) {
+      setIsLearningMode(false);
+      return;
+    }
     const newProject: Project = {
       id: `p-lesson-${Date.now()}`,
       title: lesson.title,
@@ -82,6 +90,7 @@ const App: React.FC = () => {
   };
 
   const handleRemoveStepFromProject = (projectId: string, stepIndex: number) => {
+    if (!isEditor) return;
     setAllProjects(prev => prev.map(p => {
       if (p.id === projectId && p.steps) {
         const newSteps = [...p.steps];
@@ -101,6 +110,7 @@ const App: React.FC = () => {
   };
 
   const handleRemoveStepFromLesson = (lessonId: string, stepIndex: number) => {
+    if (!isEditor) return;
     setAllLessons(prev => prev.map(l => {
       if (l.id === lessonId && l.storySteps) {
         const newSteps = [...l.storySteps];
@@ -146,6 +156,7 @@ const App: React.FC = () => {
           onExit={() => setIsLearningMode(false)}
           onPublish={handleAddLessonToGallery}
           onRemoveStep={(idx) => handleRemoveStepFromLesson(allLessons[learningLevelIndex].id, idx)}
+          isEditor={isEditor}
         />
       );
     }
@@ -156,6 +167,7 @@ const App: React.FC = () => {
           project={selectedProject} 
           onExit={() => setSelectedProject(null)} 
           onRemoveStep={(idx) => handleRemoveStepFromProject(selectedProject.id, idx)}
+          isEditor={isEditor}
         />
       );
     }
@@ -167,6 +179,7 @@ const App: React.FC = () => {
           schedule={allSchedule} 
           projects={allProjects}
           onAddItem={handleAddScheduleItem}
+          isEditor={isEditor}
         />
       );
       case 'Project Gallery': return (
@@ -174,6 +187,7 @@ const App: React.FC = () => {
           projects={allProjects} 
           onSelectProject={setSelectedProject} 
           onOpenCreation={() => setIsCreatingProject(true)}
+          isEditor={isEditor}
         />
       );
       default: return <LabLayoutView onEnroll={startLearning} />;
@@ -195,10 +209,11 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-6">
-             <div className="text-xs font-black text-indigo-600 uppercase tracking-widest hidden lg:block">Open Access Workspace</div>
+             <div className="text-xs font-black text-indigo-600 uppercase tracking-widest hidden lg:block">
+               {isEditor ? 'Editor Access Workspace' : 'Open Access Workspace'}
+             </div>
              
              <div className="flex items-center gap-4">
-               {/* User Info Group (Shifted Left) */}
                <div className="flex items-center gap-3">
                  <div className="text-right hidden sm:block">
                    <div className="text-[10px] font-black text-slate-900 leading-none uppercase">{user.name}</div>
@@ -213,15 +228,12 @@ const App: React.FC = () => {
                  </div>
                </div>
 
-               {/* Dedicated Sign Out Button */}
                <button 
                  onClick={handleSignOut}
                  className="group relative w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 transition-all shadow-sm active:scale-90"
                  title="Sign Out"
                >
                  <i className="fa-solid fa-right-from-bracket text-sm"></i>
-                 
-                 {/* Tooltip */}
                  <div className="absolute top-full right-0 mt-3 px-3 py-1.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-xl">
                    Secure Logout
                  </div>
@@ -256,7 +268,7 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {isCreatingProject && (
+      {isCreatingProject && isEditor && (
         <ProjectCreationModal 
           onClose={() => setIsCreatingProject(false)} 
           onSubmit={handleAddProject} 

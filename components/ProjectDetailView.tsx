@@ -6,9 +6,10 @@ interface ProjectDetailViewProps {
   project: Project;
   onExit: () => void;
   onRemoveStep?: (index: number) => void;
+  isEditor?: boolean;
 }
 
-const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ project, onExit, onRemoveStep }) => {
+const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ project, onExit, onRemoveStep, isEditor = false }) => {
   const [activeStep, setActiveStep] = useState(0);
 
   if (!project) return null;
@@ -74,13 +75,15 @@ const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ project, onExit, 
                   </div>
                   <span className="truncate">{step.title}</span>
                 </button>
-                <button 
-                  onClick={(e) => handleRemove(e, i)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-rose-50 text-rose-400 opacity-0 group-hover/item:opacity-100 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center shadow-sm"
-                  title="Remove this step"
-                >
-                  <i className="fa-solid fa-minus text-[10px]"></i>
-                </button>
+                {isEditor && (
+                  <button 
+                    onClick={(e) => handleRemove(e, i)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-rose-50 text-rose-400 opacity-0 group-hover/item:opacity-100 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center shadow-sm"
+                    title="Remove this step"
+                  >
+                    <i className="fa-solid fa-minus text-[10px]"></i>
+                  </button>
+                )}
               </li>
             ))}
             {(!project.steps || project.steps.length === 0) && (

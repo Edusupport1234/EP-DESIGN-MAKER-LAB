@@ -10,9 +10,10 @@ interface LessonPathDetailProps {
   onExit: () => void;
   onPublish?: (lesson: Lesson) => void;
   onRemoveStep?: (index: number) => void;
+  isEditor?: boolean;
 }
 
-const LessonPathDetail: React.FC<LessonPathDetailProps> = ({ lesson, currentLevelIndex, onNext, onExit, onPublish, onRemoveStep }) => {
+const LessonPathDetail: React.FC<LessonPathDetailProps> = ({ lesson, currentLevelIndex, onNext, onExit, onPublish, onRemoveStep, isEditor = false }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [isPublishing, setIsPublishing] = useState(false);
 
@@ -92,12 +93,14 @@ const LessonPathDetail: React.FC<LessonPathDetailProps> = ({ lesson, currentLeve
                   </div>
                   <span className="truncate">{step.title}</span>
                 </button>
-                <button 
-                  onClick={(e) => handleRemove(e, i)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-rose-50 text-rose-400 opacity-0 group-hover/item:opacity-100 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center shadow-sm"
-                >
-                  <i className="fa-solid fa-minus text-[10px]"></i>
-                </button>
+                {isEditor && (
+                  <button 
+                    onClick={(e) => handleRemove(e, i)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-rose-50 text-rose-400 opacity-0 group-hover/item:opacity-100 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center shadow-sm"
+                  >
+                    <i className="fa-solid fa-minus text-[10px]"></i>
+                  </button>
+                )}
               </li>
             ))}
           </ul>
@@ -162,9 +165,9 @@ const LessonPathDetail: React.FC<LessonPathDetailProps> = ({ lesson, currentLeve
         <div className="flex items-center gap-3">
           {isLastLevel ? (
             <button 
-              onClick={handlePublish}
+              onClick={isEditor ? handlePublish : onExit}
               disabled={isPublishing}
-              className="px-8 py-3.5 bg-emerald-600 text-white rounded-2xl text-[12px] font-black hover:bg-emerald-700 shadow-xl shadow-emerald-200 animate-celebrate flex items-center gap-3 uppercase tracking-widest"
+              className={`px-8 py-3.5 ${isEditor ? 'bg-emerald-600' : 'bg-slate-900'} text-white rounded-2xl text-[12px] font-black hover:opacity-90 shadow-xl flex items-center gap-3 uppercase tracking-widest transition-all`}
             >
               {isPublishing ? (
                 <>
@@ -173,8 +176,8 @@ const LessonPathDetail: React.FC<LessonPathDetailProps> = ({ lesson, currentLeve
                 </>
               ) : (
                 <>
-                  <i className="fa-solid fa-cloud-arrow-up"></i>
-                  Feature in Gallery
+                  <i className={`fa-solid ${isEditor ? 'fa-cloud-arrow-up' : 'fa-check'}`}></i>
+                  {isEditor ? 'Feature in Gallery' : 'Complete Path'}
                 </>
               )}
             </button>

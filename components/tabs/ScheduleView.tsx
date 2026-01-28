@@ -7,9 +7,10 @@ interface ScheduleViewProps {
   schedule: DaySchedule[];
   projects: Project[];
   onAddItem: (day: string, item: ScheduleItem) => void;
+  isEditor?: boolean;
 }
 
-const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, projects, onAddItem }) => {
+const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, projects, onAddItem, isEditor = false }) => {
   const [selectedPreview, setSelectedPreview] = useState<ScheduleItem | null>(null);
   const [activeTypeFilter, setActiveTypeFilter] = useState<string>('All');
   const [isAddingSchedule, setIsAddingSchedule] = useState(false);
@@ -153,18 +154,20 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, projects, onAddIt
         })}
       </div>
 
-      {/* Floating Add Schedule Button */}
-      <div className="fixed bottom-24 right-6 z-50">
-        <button 
-          onClick={() => setIsAddingSchedule(true)}
-          className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl shadow-2xl transition-all duration-300 active:scale-95 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:rotate-90 group"
-          title="Add New Lesson Slot"
-        >
-          <i className="fa-solid fa-plus"></i>
-        </button>
-      </div>
+      {/* Floating Add Schedule Button - Editor Only */}
+      {isEditor && (
+        <div className="fixed bottom-24 right-6 z-50">
+          <button 
+            onClick={() => setIsAddingSchedule(true)}
+            className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl shadow-2xl transition-all duration-300 active:scale-95 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:rotate-90 group"
+            title="Add New Lesson Slot"
+          >
+            <i className="fa-solid fa-plus"></i>
+          </button>
+        </div>
+      )}
 
-      {isAddingSchedule && (
+      {isAddingSchedule && isEditor && (
         <ScheduleCreationModal 
           projects={projects}
           onClose={() => setIsAddingSchedule(false)}
@@ -205,59 +208,41 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, projects, onAddIt
             {/* Details Section */}
             <div className="md:w-1/2 p-10 md:p-14 overflow-y-auto max-h-[70vh] md:max-h-none flex flex-col bg-white">
               <div className="grid grid-cols-2 gap-4 mb-10">
-                <div className="bg-slate-50 p-5 rounded-3xl flex items-center gap-4 border border-slate-100">
-                  <div className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-purple-600">
-                    <i className="fa-solid fa-clock"></i>
-                  </div>
-                  <div>
-                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Time Slot</p>
-                    <p className="text-xs font-black text-slate-900">{selectedPreview.time}</p>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Time Slot</p>
+                  <div className="bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 font-bold text-sm text-slate-700">
+                    <i className="fa-regular fa-clock mr-2 text-purple-500"></i>
+                    {selectedPreview.time}
                   </div>
                 </div>
-                <div className="bg-slate-50 p-5 rounded-3xl flex items-center gap-4 border border-slate-100">
-                  <div className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-purple-600">
-                    <i className="fa-solid fa-user-graduate"></i>
-                  </div>
-                  <div>
-                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Instructor</p>
-                    <p className="text-xs font-black text-slate-900">{selectedPreview.instructor || 'Staff'}</p>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Target Audience</p>
+                  <div className="bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 font-bold text-sm text-slate-700">
+                    <i className="fa-solid fa-users mr-2 text-purple-500"></i>
+                    {selectedPreview.audience}
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-8 flex-1">
-                <div>
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                    <div className="w-1 h-1 bg-purple-500 rounded-full"></div>
-                    Curriculum Path
-                  </h4>
-                  <p className="text-slate-600 text-base leading-relaxed font-medium">
-                    {selectedPreview.description}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                    <div className="w-1 h-1 bg-purple-500 rounded-full"></div>
-                    Target Mastery
-                  </h4>
-                  <p className="text-slate-900 text-sm font-black tracking-tight">{selectedPreview.audience}</p>
-                </div>
-                <div className="pt-6 border-t border-slate-100">
-                  <div className="flex items-center gap-3 p-4 bg-purple-50 rounded-2xl border border-purple-100">
-                    <i className="fa-solid fa-circle-info text-purple-500"></i>
-                    <p className="text-[10px] text-purple-700 font-bold leading-relaxed">
-                      HD instructional videos and downloadable project assets are included for all registered participants.
-                    </p>
-                  </div>
-                </div>
+              <div className="space-y-4">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Session Overview</p>
+                <p className="text-slate-600 leading-relaxed font-medium">
+                  {selectedPreview.description}
+                </p>
               </div>
 
-              <div className="mt-10">
-                <button 
-                  onClick={() => setSelectedPreview(null)}
-                  className="w-full py-5 bg-slate-900 text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] hover:bg-slate-800 active:scale-[0.98] transition-all shadow-xl shadow-slate-200"
-                >
-                  Close Exploration
+              <div className="mt-auto pt-12 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                    <i className="fa-solid fa-chalkboard-user"></i>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Instructor</p>
+                    <p className="text-sm font-bold text-slate-900">{selectedPreview.instructor || 'Staff'}</p>
+                  </div>
+                </div>
+                <button className="px-10 py-4 bg-purple-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-purple-100 hover:bg-purple-700 transition-all active:scale-95">
+                  Book This Slot
                 </button>
               </div>
             </div>

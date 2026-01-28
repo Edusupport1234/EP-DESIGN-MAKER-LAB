@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Project, Lesson } from '../../types';
 import { LESSONS } from '../../constants';
@@ -7,9 +6,10 @@ interface ProjectGalleryViewProps {
   projects: Project[];
   onSelectProject?: (project: Project) => void;
   onOpenCreation?: () => void;
+  isEditor?: boolean;
 }
 
-const ProjectGalleryView: React.FC<ProjectGalleryViewProps> = ({ projects, onSelectProject, onOpenCreation }) => {
+const ProjectGalleryView: React.FC<ProjectGalleryViewProps> = ({ projects, onSelectProject, onOpenCreation, isEditor = false }) => {
   const [activeFilter, setActiveFilter] = useState('All Projects');
   const [searchQuery, setSearchQuery] = useState('');
   const filters = ['All Projects', 'Building Structures', 'Microcontrollers', 'Craft & Art', 'Robotics', '3D Printing Mastery'];
@@ -104,15 +104,17 @@ const ProjectGalleryView: React.FC<ProjectGalleryViewProps> = ({ projects, onSel
         </div>
       )}
 
-      {/* Floating Add Button */}
-      <div className="fixed bottom-24 right-6 z-50">
-        <button 
-          onClick={onOpenCreation}
-          className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl shadow-2xl transition-all duration-300 active:scale-95 bg-gradient-to-tr from-indigo-600 to-purple-600 hover:rotate-90"
-        >
-          <i className="fa-solid fa-plus"></i>
-        </button>
-      </div>
+      {/* Floating Add Button - Editor Only */}
+      {isEditor && (
+        <div className="fixed bottom-24 right-6 z-50">
+          <button 
+            onClick={onOpenCreation}
+            className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl shadow-2xl transition-all duration-300 active:scale-95 bg-gradient-to-tr from-indigo-600 to-purple-600 hover:rotate-90"
+          >
+            <i className="fa-solid fa-plus"></i>
+          </button>
+        </div>
+      )}
     </div>
   );
 };
