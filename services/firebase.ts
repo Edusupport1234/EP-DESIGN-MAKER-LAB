@@ -2,7 +2,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
-// Your web app's Firebase configuration from the Firebase Console
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyC_IYue8EOjkWWHIi9YBM6paBv_gWKu8Ms",
   authDomain: "ep--design-maker-lab.firebaseapp.com",
@@ -14,12 +14,12 @@ const firebaseConfig = {
   measurementId: "G-V5FJNS8SES"
 };
 
-// Initialize Firebase app for console connection
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
 
-// Fix: Implementing and exporting signInWithGoogle for component usage
-const provider = new GoogleAuthProvider();
-export const signInWithGoogle = () => signInWithPopup(auth, provider);
+// Sign in with Google helper using popup
+export const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
 
 export default app;

@@ -7,6 +7,13 @@ export enum Difficulty {
 
 export type TabType = 'Lab Layout' | 'Schedule' | 'Project Gallery';
 
+export interface UserInfo {
+  email: string;
+  name: string;
+  picture: string;
+  sub: string;
+}
+
 export interface LessonStep {
   title: string;
   content: string;

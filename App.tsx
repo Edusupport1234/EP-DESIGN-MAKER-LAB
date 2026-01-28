@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AIAssistant from './components/AIAssistant';
 import LabLayoutView from './components/tabs/LabLayoutView';
 import ScheduleView from './components/tabs/ScheduleView';
@@ -7,12 +7,15 @@ import ProjectGalleryView from './components/tabs/ProjectGalleryView';
 import LessonPathDetail from './components/LessonPathDetail';
 import ProjectDetailView from './components/ProjectDetailView';
 import ProjectCreationModal from './components/ProjectCreationModal';
-import { TabType, Project, Lesson, Material, DaySchedule, ScheduleItem } from './types';
+import LoginScreen from './components/LoginScreen';
+import { TabType, Project, Lesson, Material, DaySchedule, ScheduleItem, UserInfo } from './types';
 import { PROJECTS, LESSONS, MATERIALS, WEEKLY_SCHEDULE } from './constants';
-// Initialize Firebase connection on app load
-import './services/firebase';
+import { auth } from './services/firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 const App: React.FC = () => {
+  const [user, setUser] = useState<UserInfo | null>(null);
+  const [loadingAuth, setLoadingAuth] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('Lab Layout');
   const [isLearningMode, setIsLearningMode] = useState(false);
   const [learningLevelIndex, setLearningLevelIndex] = useState(0);
@@ -22,8 +25,25 @@ const App: React.FC = () => {
   // App Global State
   const [allProjects, setAllProjects] = useState<Project[]>(PROJECTS);
   const [allLessons, setAllLessons] = useState<Lesson[]>(LESSONS);
-  const [allMaterials, setAllMaterials] = useState<Material[]>(MATERIALS);
   const [allSchedule, setAllSchedule] = useState<DaySchedule[]>(WEEKLY_SCHEDULE);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          email: firebaseUser.email || '',
+          name: firebaseUser.displayName || 'Anonymous',
+          picture: firebaseUser.photoURL || '',
+          sub: firebaseUser.uid
+        });
+      } else {
+        setUser(null);
+      }
+      setLoadingAuth(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleAddProject = (newProject: Project) => {
     setAllProjects(prev => [newProject, ...prev]);
@@ -44,7 +64,7 @@ const App: React.FC = () => {
     const newProject: Project = {
       id: `p-lesson-${Date.now()}`,
       title: lesson.title,
-      student: 'Lab Student',
+      student: user?.name || 'Lab Student',
       grade: 'Lab Certified',
       category: lesson.category,
       description: `Completed the ${lesson.title} mastery pathway.`,
@@ -95,6 +115,26 @@ const App: React.FC = () => {
     setLearningLevelIndex(0);
     setIsLearningMode(true);
   };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Sign-out error:', error);
+    }
+  };
+
+  if (loadingAuth) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <i className="fa-solid fa-circle-notch animate-spin text-indigo-500 text-4xl"></i>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginScreen />;
+  }
 
   const renderContent = () => {
     if (isLearningMode) {
@@ -156,13 +196,21 @@ const App: React.FC = () => {
 
           <div className="flex items-center gap-4">
              <div className="text-xs font-black text-indigo-600 uppercase tracking-widest hidden sm:block">Open Access Workspace</div>
-             <div className="flex items-center gap-3">
+             <div className="flex items-center gap-3 group relative cursor-pointer" onClick={handleSignOut} title="Click to Sign Out">
                <div className="text-right hidden sm:block">
-                 <div className="text-[10px] font-black text-slate-900 leading-none uppercase">Lab Student</div>
-                 <div className="text-[8px] font-bold text-slate-400 uppercase">Guest Mode</div>
+                 <div className="text-[10px] font-black text-slate-900 leading-none uppercase">{user.name}</div>
+                 <div className="text-[8px] font-bold text-slate-400 uppercase">{user.email}</div>
                </div>
-               <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 shadow-sm overflow-hidden">
-                 <i className="fa-solid fa-user"></i>
+               <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 shadow-sm overflow-hidden group-hover:border-rose-500 transition-colors">
+                 {user.picture ? (
+                   <img src={user.picture} alt={user.name} className="w-full h-full object-cover" />
+                 ) : (
+                   <i className="fa-solid fa-user"></i>
+                 )}
+               </div>
+               {/* Sign Out Tooltip Overlay */}
+               <div className="absolute top-full right-0 mt-2 bg-slate-900 text-white text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+                 Sign Out
                </div>
              </div>
           </div>
