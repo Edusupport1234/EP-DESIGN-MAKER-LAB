@@ -220,7 +220,7 @@ const App: React.FC = () => {
              <div className="bg-white/80 backdrop-blur-md px-6 py-4 rounded-[2.5rem] border border-white shadow-xl flex items-center gap-5">
                 <div className="text-right hidden sm:block">
                    <div className="text-xs font-black text-slate-900 leading-none">{user.name}</div>
-                   <div className="text-[9px] font-black text-indigo-400 mt-1 uppercase tracking-widest">Level 12 Architect</div>
+                   <div className="text-[9px] font-black text-indigo-400 mt-1 uppercase tracking-widest">{user.email}</div>
                 </div>
                 <div className="w-12 h-12 rounded-full border-2 border-indigo-100 p-0.5 shadow-sm overflow-hidden">
                    {user.picture ? (
