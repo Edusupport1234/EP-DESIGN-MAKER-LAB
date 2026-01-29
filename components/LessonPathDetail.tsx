@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Lesson, Difficulty } from '../types';
 import { LESSONS } from '../constants';
@@ -254,26 +253,26 @@ const LessonPathDetail: React.FC<LessonPathDetailProps> = ({ lesson, currentLeve
         <div className="flex items-center gap-3">
           {isLastLevel ? (
             <button 
-              onClick={isEditor ? handlePublish : onExit}
+              onClick={handlePublish}
               disabled={isPublishing}
-              className={`px-10 py-4 ${isEditor ? 'bg-emerald-600 shadow-emerald-100' : 'bg-slate-900 shadow-slate-100'} text-white rounded-[1.5rem] text-[12px] font-black hover:opacity-90 shadow-xl flex items-center gap-3 uppercase tracking-widest transition-all active:scale-95`}
+              className={`px-12 py-4 ${isEditor ? 'bg-emerald-600 shadow-emerald-100' : 'bg-purple-600 shadow-purple-100'} text-white rounded-[1.5rem] text-[12px] font-black hover:opacity-90 shadow-xl flex items-center gap-3 uppercase tracking-widest transition-all active:scale-95 border-2 border-black/10`}
             >
               {isPublishing ? (
                 <>
                   <i className="fa-solid fa-spinner animate-spin"></i>
-                  Processing Submission
+                  Processing
                 </>
               ) : (
                 <>
-                  <i className={`fa-solid ${isEditor ? 'fa-cloud-arrow-up' : 'fa-check-double'}`}></i>
-                  {isEditor ? 'Publish to Community' : 'Complete Path'}
+                  <i className={`fa-solid ${isEditor ? 'fa-cloud-arrow-up' : 'fa-flag-checkered'}`}></i>
+                  {isEditor ? 'Publish & Finish' : 'Finish'}
                 </>
               )}
             </button>
           ) : (
             <button 
               onClick={onNext}
-              className="px-10 py-4 bg-purple-600 text-white rounded-[1.5rem] text-[12px] font-black hover:bg-purple-700 shadow-xl shadow-purple-200 flex items-center gap-3 uppercase tracking-widest transition-all active:scale-95"
+              className="px-10 py-4 bg-purple-600 text-white rounded-[1.5rem] text-[12px] font-black hover:bg-purple-700 shadow-xl shadow-purple-200 flex items-center gap-3 uppercase tracking-widest transition-all active:scale-95 border-2 border-black/10"
             >
               Master Next Level
               <i className="fa-solid fa-arrow-right text-[10px]"></i>
