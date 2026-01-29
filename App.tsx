@@ -77,16 +77,26 @@ const App: React.FC = () => {
   }, []);
 
   // Compute Today's Schedule and Lessons
+  // We use the day name to find the right schedule, then merge details for UI sync
   const todayName = useMemo(() => new Date().toLocaleDateString('en-US', { weekday: 'long' }), []);
   
   const todayLessons = useMemo(() => {
     const todaySched = allSchedule.find(s => s.day === todayName);
     if (!todaySched) return [];
     
-    // Map schedule items to full lesson objects
+    // Map schedule items to full lesson objects, merging schedule meta for sync
     return todaySched.items
       .filter(item => item.lessonId)
-      .map(item => allLessons.find(l => l.id === item.lessonId))
+      .map(item => {
+        const lesson = allLessons.find(l => l.id === item.lessonId);
+        if (!lesson) return null;
+        return {
+          ...lesson,
+          title: item.title, // Sync title with Schedule
+          description: item.description, // Sync description with Schedule
+          imageUrl: item.imageUrl || lesson.imageUrl // Prefer specific schedule imagery
+        };
+      })
       .filter((l): l is Lesson => !!l);
   }, [allSchedule, allLessons, todayName]);
 
