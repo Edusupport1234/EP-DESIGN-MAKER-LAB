@@ -113,7 +113,7 @@ const LessonPathDetail: React.FC<LessonPathDetailProps> = ({ lesson, currentLeve
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar - Navigation Milestones */}
         <div className="w-72 border-r border-slate-200/60 bg-white hidden lg:flex flex-col p-6 overflow-y-auto shrink-0 sticky top-0">
           <h3 className="text-[11px] text-slate-400 font-black uppercase tracking-[0.2em] mb-6 px-2">Path Milestones</h3>
@@ -198,7 +198,7 @@ const LessonPathDetail: React.FC<LessonPathDetailProps> = ({ lesson, currentLeve
                 {lesson.storySteps?.map((step, i) => (
                   <div 
                     key={i} 
-                    ref={el => stepRefs.current[i] = el}
+                    ref={el => { stepRefs.current[i] = el; }}
                     data-step-index={i}
                     className={`bg-white rounded-[3rem] p-12 border transition-all duration-700 shadow-xl relative overflow-hidden group/step ${
                       activeStep === i ? 'border-purple-500 ring-4 ring-purple-500/5' : 'border-slate-100'
