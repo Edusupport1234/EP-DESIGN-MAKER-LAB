@@ -236,7 +236,7 @@ const App: React.FC = () => {
                onClick={handleSignOut}
                className="w-14 h-14 rounded-3xl bg-white border border-white flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all shadow-xl active:scale-90"
              >
-               <i className="fa-solid fa-power-off text-lg"></i>
+               <i className="fa-solid fa-right-from-bracket text-lg"></i>
              </button>
           </div>
         </div>
