@@ -21,12 +21,10 @@ const App: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   
-  // App Global State
   const [allProjects, setAllProjects] = useState<Project[]>(PROJECTS);
   const [allLessons, setAllLessons] = useState<Lesson[]>(LESSONS);
   const [allSchedule, setAllSchedule] = useState<DaySchedule[]>(WEEKLY_SCHEDULE);
 
-  // RBAC: Check if the user is the specific admin email
   const isEditor = user?.email === 'Edusupport@ep-asia.com';
 
   useEffect(() => {
@@ -43,7 +41,6 @@ const App: React.FC = () => {
       }
       setLoadingAuth(false);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -83,42 +80,9 @@ const App: React.FC = () => {
       imageUrl: lesson.imageUrl,
       award: 'Course Completed'
     };
-    
     setAllProjects(prev => [newProject, ...prev]);
     setActiveTab('Project Gallery');
     setIsLearningMode(false);
-  };
-
-  const handleRemoveStepFromProject = (projectId: string, stepIndex: number) => {
-    if (!isEditor) return;
-    setAllProjects(prev => prev.map(p => {
-      if (p.id === projectId && p.steps) {
-        const newSteps = [...p.steps];
-        newSteps.splice(stepIndex, 1);
-        return { ...p, steps: newSteps };
-      }
-      return p;
-    }));
-    if (selectedProject?.id === projectId) {
-      setSelectedProject(prev => {
-        if (!prev || !prev.steps) return prev;
-        const newSteps = [...prev.steps];
-        newSteps.splice(stepIndex, 1);
-        return { ...prev, steps: newSteps };
-      });
-    }
-  };
-
-  const handleRemoveStepFromLesson = (lessonId: string, stepIndex: number) => {
-    if (!isEditor) return;
-    setAllLessons(prev => prev.map(l => {
-      if (l.id === lessonId && l.storySteps) {
-        const newSteps = [...l.storySteps];
-        newSteps.splice(stepIndex, 1);
-        return { ...l, storySteps: newSteps };
-      }
-      return l;
-    }));
   };
 
   const startLearning = () => {
@@ -127,16 +91,12 @@ const App: React.FC = () => {
   };
 
   const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error('Sign-out error:', error);
-    }
+    try { await signOut(auth); } catch (error) { console.error('Sign-out error:', error); }
   };
 
   if (loadingAuth) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f3f1ff] flex items-center justify-center">
         <i className="fa-solid fa-circle-notch animate-spin text-indigo-500 text-4xl"></i>
       </div>
     );
@@ -155,7 +115,6 @@ const App: React.FC = () => {
           onNext={() => setLearningLevelIndex(prev => Math.min(prev + 1, allLessons.length - 1))} 
           onExit={() => setIsLearningMode(false)}
           onPublish={handleAddLessonToGallery}
-          onRemoveStep={(idx) => handleRemoveStepFromLesson(allLessons[learningLevelIndex].id, idx)}
           isEditor={isEditor}
         />
       );
@@ -166,7 +125,6 @@ const App: React.FC = () => {
         <ProjectDetailView 
           project={selectedProject} 
           onExit={() => setSelectedProject(null)} 
-          onRemoveStep={(idx) => handleRemoveStepFromProject(selectedProject.id, idx)}
           isEditor={isEditor}
         />
       );
@@ -194,76 +152,84 @@ const App: React.FC = () => {
     }
   };
 
+  const isDetailView = isLearningMode || selectedProject;
+
   return (
-    <div className="min-h-screen bg-indigo-50/30 pb-20">
-      <div className="h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 w-full fixed top-0 z-[60]"></div>
-      
-      <header className={`pt-8 px-6 max-w-7xl mx-auto transition-opacity duration-300 ${isLearningMode || selectedProject ? 'opacity-0 pointer-events-none absolute' : 'opacity-100'}`}>
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center">
-             <img 
-               src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStOQQrCJ8rmaj-TLbkMU6TFRj2XsSLnDXzEQ&s" 
-               alt="STEM Academy Logo" 
-               className="h-12 md:h-16 w-auto object-contain rounded-lg"
-             />
+    <div className="min-h-screen bg-[#f3f1ff] pb-32 grid-bg">
+      {/* Redesigned Floating Header with Soft UI elements */}
+      <header className={`pt-12 px-8 max-w-[1400px] mx-auto transition-all duration-700 ${isDetailView ? 'opacity-0 -translate-y-full absolute' : 'opacity-100 translate-y-0'}`}>
+        <div className="flex items-center justify-between mb-12">
+          <div className="flex items-center gap-8">
+            <div className="w-20 h-20 bg-white rounded-[2rem] shadow-2xl border border-white flex items-center justify-center p-4">
+              <img 
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStOQQrCJ8rmaj-TLbkMU6TFRj2XsSLnDXzEQ&s" 
+                alt="Logo" 
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <div>
+              <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-none">Design Maker Lab</h1>
+              <div className="flex items-center gap-4 mt-3">
+                 <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em]">Mastery Workspace</span>
+                 <div className="w-1.5 h-1.5 bg-indigo-200 rounded-full"></div>
+                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">{isEditor ? 'Staff Console' : 'Student Hub'}</span>
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center gap-6">
-             <div className="text-xs font-black text-indigo-600 uppercase tracking-widest hidden lg:block">
-               {isEditor ? 'Editor Access Workspace' : 'Open Access Workspace'}
-             </div>
-             
-             <div className="flex items-center gap-4">
-               <div className="flex items-center gap-3">
-                 <div className="text-right hidden sm:block">
-                   <div className="text-[10px] font-black text-slate-900 leading-none uppercase">{user.name}</div>
-                   <div className="text-[8px] font-bold text-slate-400 uppercase">{user.email}</div>
-                 </div>
-                 <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 shadow-sm overflow-hidden">
+             <div className="bg-white/80 backdrop-blur-md px-6 py-4 rounded-[2.5rem] border border-white shadow-xl flex items-center gap-5">
+                <div className="text-right hidden sm:block">
+                   <div className="text-xs font-black text-slate-900 leading-none">{user.name}</div>
+                   <div className="text-[9px] font-black text-indigo-400 mt-1 uppercase tracking-widest">Level 12 Architect</div>
+                </div>
+                <div className="w-12 h-12 rounded-full border-2 border-indigo-100 p-0.5 shadow-sm overflow-hidden">
                    {user.picture ? (
-                     <img src={user.picture} alt={user.name} className="w-full h-full object-cover" />
+                     <img src={user.picture} alt={user.name} className="w-full h-full rounded-full object-cover" />
                    ) : (
-                     <i className="fa-solid fa-user"></i>
+                     <div className="w-full h-full rounded-full bg-indigo-50 flex items-center justify-center text-indigo-300">
+                       <i className="fa-solid fa-user"></i>
+                     </div>
                    )}
-                 </div>
-               </div>
-
-               <button 
-                 onClick={handleSignOut}
-                 className="group relative w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 transition-all shadow-sm active:scale-90"
-                 title="Sign Out"
-               >
-                 <i className="fa-solid fa-right-from-bracket text-sm"></i>
-                 <div className="absolute top-full right-0 mt-3 px-3 py-1.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-xl">
-                   Secure Logout
-                 </div>
-               </button>
+                </div>
              </div>
+             <button 
+               onClick={handleSignOut}
+               className="w-14 h-14 rounded-3xl bg-white border border-white flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all shadow-xl active:scale-90"
+             >
+               <i className="fa-solid fa-power-off text-lg"></i>
+             </button>
           </div>
         </div>
 
-        <div className="bg-white p-1.5 rounded-2xl flex items-center gap-1 shadow-sm border border-slate-100 max-w-fit mb-10 overflow-x-auto">
-          {[
-            { id: 'Lab Layout', icon: 'fa-hammer' },
-            { id: 'Schedule', icon: 'fa-calendar-days' },
-            { id: 'Project Gallery', icon: 'fa-images' }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as TabType)}
-              className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all whitespace-nowrap ${
-                activeTab === tab.id ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50'
-              }`}
-            >
-              <i className={`fa-solid ${tab.icon}`}></i>
-              {tab.id}
-            </button>
-          ))}
+        {/* Pill Navigation Bar */}
+        <div className="flex items-center justify-center lg:justify-start">
+          <nav className="bg-slate-900/95 backdrop-blur-xl p-2 rounded-full flex items-center gap-1 shadow-2xl shadow-indigo-900/10">
+            {[
+              { id: 'Lab Layout', icon: 'fa-cube', color: 'bg-[#ffde59] text-slate-900' },
+              { id: 'Schedule', icon: 'fa-calendar-day', color: 'bg-indigo-500 text-white' },
+              { id: 'Project Gallery', icon: 'fa-shapes', color: 'bg-purple-600 text-white' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as TabType)}
+                className={`px-10 py-5 rounded-full font-black text-[11px] uppercase tracking-widest flex items-center gap-3 transition-all ${
+                  activeTab === tab.id 
+                    ? tab.color + ' shadow-lg scale-105' 
+                    : 'text-slate-400 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <i className={`fa-solid ${tab.icon} text-xs`}></i>
+                {tab.id}
+              </button>
+            ))}
+          </nav>
         </div>
       </header>
 
-      <main className={`max-w-7xl mx-auto px-6 ${isLearningMode || selectedProject ? 'mt-8' : ''}`}>
-        <div className={`bg-white rounded-[2.5rem] shadow-xl border border-indigo-100/50 min-h-[600px] relative overflow-hidden transition-all duration-500 ${isLearningMode || selectedProject ? 'p-0' : 'p-8 md:p-12'}`}>
+      {/* Main Container with highly rounded corners */}
+      <main className={`max-w-[1400px] mx-auto px-8 transition-all duration-700 ${isDetailView ? 'mt-8' : 'mt-16'}`}>
+        <div className={`bg-white rounded-[4rem] shadow-[0_50px_120px_rgba(99,102,241,0.04)] border border-white/50 min-h-[750px] relative overflow-hidden transition-all duration-500 ${isDetailView ? 'p-0' : 'p-12 md:p-20'}`}>
           {renderContent()}
         </div>
       </main>

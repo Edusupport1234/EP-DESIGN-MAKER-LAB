@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Project, Lesson } from '../../types';
-import { LESSONS } from '../../constants';
+import { Project } from '../../types';
 
 interface ProjectGalleryViewProps {
   projects: Project[];
@@ -12,7 +11,7 @@ interface ProjectGalleryViewProps {
 const ProjectGalleryView: React.FC<ProjectGalleryViewProps> = ({ projects, onSelectProject, onOpenCreation, isEditor = false }) => {
   const [activeFilter, setActiveFilter] = useState('All Projects');
   const [searchQuery, setSearchQuery] = useState('');
-  const filters = ['All Projects', 'Building Structures', 'Microcontrollers', 'Craft & Art', 'Robotics', '3D Printing Mastery'];
+  const filters = ['All Projects', 'Building Structures', 'Microcontrollers', 'Craft & Art', 'Robotics'];
 
   const filteredProjects = useMemo(() => {
     return projects.filter(project => {
@@ -20,40 +19,43 @@ const ProjectGalleryView: React.FC<ProjectGalleryViewProps> = ({ projects, onSel
       const matchesSearch = 
         project.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
         project.student.toLowerCase().includes(searchQuery.toLowerCase());
-      
       return matchesCategory && matchesSearch;
     });
   }, [activeFilter, searchQuery, projects]);
 
   return (
-    <div className="space-y-10 relative">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-800 mb-2">Project Gallery</h1>
-          <p className="text-slate-500 text-sm">Discover and learn from community submissions</p>
+    <div className="space-y-16 relative">
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+        <div className="max-w-xl">
+          <div className="bg-amber-100 text-amber-700 px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] inline-block mb-4">Global Discovery</div>
+          <h1 className="text-5xl font-black text-slate-900 tracking-tight leading-none mb-4">Innovation Library</h1>
+          <p className="text-slate-400 text-lg font-medium">Explore the creative results of our global maker community.</p>
         </div>
         
-        <div className="relative max-w-sm w-full">
-          <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+        <div className="relative w-full lg:max-w-md">
+          <div className="absolute left-7 top-1/2 -translate-y-1/2 text-slate-300">
+            <i className="fa-solid fa-magnifying-glass text-lg"></i>
+          </div>
           <input 
             type="text" 
-            placeholder="Search projects..." 
+            placeholder="Search projects or makers..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all"
+            className="w-full bg-[#f8f7ff] border border-slate-100 rounded-[2.5rem] pl-16 pr-8 py-6 text-sm font-bold focus:outline-none focus:ring-8 focus:ring-indigo-500/5 focus:border-indigo-200 transition-all placeholder:text-slate-300 shadow-inner"
           />
         </div>
       </header>
 
-      <div className="flex flex-wrap gap-2 mb-8">
+      {/* Categories Scroller */}
+      <div className="flex flex-wrap gap-3 pb-4">
         {filters.map(f => (
           <button
             key={f}
             onClick={() => setActiveFilter(f)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
               activeFilter === f 
-                ? 'bg-purple-600 text-white' 
-                : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                ? 'bg-slate-950 text-white shadow-xl scale-105' 
+                : 'bg-white border border-slate-100 text-slate-400 hover:text-indigo-600 hover:border-indigo-100'
             }`}
           >
             {f}
@@ -62,54 +64,71 @@ const ProjectGalleryView: React.FC<ProjectGalleryViewProps> = ({ projects, onSel
       </div>
 
       {filteredProjects.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
           {filteredProjects.map(project => (
             <div 
               key={project.id} 
               onClick={() => onSelectProject?.(project)}
-              className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:border-purple-200 transition-all group cursor-pointer"
+              className="bg-[#fcfcff] rounded-[4rem] border border-slate-100 shadow-sm hover:shadow-[0_40px_100px_rgba(99,102,241,0.06)] hover:-translate-y-4 transition-all duration-700 group cursor-pointer overflow-hidden p-4"
             >
-              <div className="relative aspect-[4/3] overflow-hidden">
-                <img src={project.imageUrl || 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=800'} alt={project.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+              <div className="relative aspect-square rounded-[3.2rem] overflow-hidden mb-8 shadow-inner">
+                <img src={project.imageUrl} alt={project.title} className="w-full h-full object-cover transition-transform duration-[2.5s] group-hover:scale-110" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                
                 {project.award && (
-                  <div className="absolute top-4 right-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-[10px] font-black flex items-center gap-1.5 shadow-lg">
-                    <i className="fa-solid fa-certificate"></i>
+                  <div className="absolute top-8 right-8 bg-[#ffde59] text-slate-900 px-5 py-2.5 rounded-2xl text-[9px] font-black uppercase tracking-widest flex items-center gap-3 shadow-2xl animate-float">
+                    <i className="fa-solid fa-award"></i>
                     {project.award}
                   </div>
                 )}
               </div>
-              <div className="p-6">
-                <h3 className="text-lg font-bold text-slate-800 mb-1">{project.title}</h3>
-                <div className="flex items-center gap-2 text-[10px] text-slate-400 font-black uppercase mb-4 tracking-widest">
-                  {project.student} | {project.grade}
+
+              <div className="px-8 pb-10 space-y-6 text-center">
+                <div className="flex items-center justify-center gap-4">
+                  <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em]">{project.category}</span>
                 </div>
-                <div className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-[10px] font-black inline-block mb-4">
-                  {project.category}
-                </div>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed mb-8 line-clamp-2">
+
+                <h3 className="text-3xl font-black text-slate-900 tracking-tight leading-tight group-hover:text-indigo-600 transition-colors">{project.title}</h3>
+                
+                <p className="text-sm text-slate-400 font-medium leading-relaxed line-clamp-2 px-4">
                   {project.description}
                 </p>
-                <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">View Workflow</span>
-                  <i className="fa-solid fa-arrow-right text-slate-300 group-hover:text-purple-600 transition-colors"></i>
+
+                <div className="pt-8 border-t border-slate-100 flex items-center justify-between">
+                   <div className="flex items-center gap-4">
+                     <div className="w-12 h-12 rounded-full border-2 border-white overflow-hidden shadow-xl ring-2 ring-indigo-50">
+                       <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${project.student}`} className="w-full h-full object-cover" alt="" />
+                     </div>
+                     <div className="text-left">
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Creator</p>
+                       <p className="text-xs font-black text-slate-900">{project.student}</p>
+                     </div>
+                   </div>
+                   <div className="flex items-center gap-2 bg-rose-50 text-rose-500 px-4 py-2 rounded-2xl text-[10px] font-black transition-all group-hover:bg-rose-500 group-hover:text-white">
+                      <i className="fa-solid fa-heart"></i>
+                      {project.likes}
+                   </div>
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-24 text-slate-400">
-          <i className="fa-solid fa-box-open text-4xl mb-4 opacity-20"></i>
-          <p className="font-bold">No projects found in this category.</p>
+        <div className="flex flex-col items-center justify-center py-40 text-slate-300">
+          <div className="w-32 h-32 rounded-[3rem] bg-slate-50 flex items-center justify-center mb-8 shadow-inner">
+            <i className="fa-solid fa-compass text-5xl opacity-20"></i>
+          </div>
+          <p className="font-black text-lg uppercase tracking-widest text-slate-900">Nothing here yet</p>
+          <p className="text-sm font-medium text-slate-400 mt-2">Try adjusting your filters or search query</p>
         </div>
       )}
 
-      {/* Floating Add Button - Editor Only */}
+      {/* Editor's Floating Action Button */}
       {isEditor && (
-        <div className="fixed bottom-24 right-6 z-50">
+        <div className="fixed bottom-12 right-12 z-50">
           <button 
             onClick={onOpenCreation}
-            className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl shadow-2xl transition-all duration-300 active:scale-95 bg-gradient-to-tr from-indigo-600 to-purple-600 hover:rotate-90"
+            className="w-20 h-20 rounded-[2.5rem] bg-slate-950 text-white text-2xl shadow-2xl hover:scale-110 hover:rotate-12 active:scale-95 transition-all duration-500"
           >
             <i className="fa-solid fa-plus"></i>
           </button>
