@@ -232,7 +232,8 @@ export const WEEKLY_SCHEDULE: DaySchedule[] = [
         audience: 'New Kit Owners', 
         description: 'Daily technical walkthrough for customers who recently purchased the Smart World Kit.', 
         instructor: 'Mr. Tan',
-        imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=1200'
+        imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=1200',
+        lessonId: 'l1'
       },
       { 
         type: 'CCA', 
@@ -257,7 +258,8 @@ export const WEEKLY_SCHEDULE: DaySchedule[] = [
         audience: 'All Kit Users', 
         description: 'Advanced troubleshooting and new feature reveal for our subscribers.', 
         instructor: 'Mrs. Wong',
-        imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1200'
+        imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1200',
+        lessonId: 'l2'
       },
       { 
         type: 'CCA', 
@@ -298,6 +300,7 @@ export const WEEKLY_SCHEDULE: DaySchedule[] = [
         audience: 'P5-P6 Students', 
         description: 'Building automated watering systems using ESP32 and moisture sensors.', 
         instructor: 'Mr. Lim',
+        lessonId: 'l2',
         imageUrl: 'https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?auto=format&fit=crop&q=80&w=1200'
       }
     ]
@@ -313,6 +316,7 @@ export const WEEKLY_SCHEDULE: DaySchedule[] = [
         audience: 'Open to All', 
         description: 'A casual event where students present their weekly builds and get feedback from peers.', 
         instructor: 'Lab Mentors',
+        lessonId: 'l1',
         imageUrl: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1200'
       }
     ]
@@ -328,6 +332,7 @@ export const WEEKLY_SCHEDULE: DaySchedule[] = [
         audience: 'Advanced Makers', 
         description: '3 hours to design, slice, and print a solution to a secret engineering problem.', 
         instructor: 'Elite Staff',
+        lessonId: 'l3',
         imageUrl: 'https://images.unsplash.com/photo-1581092341396-d99612958c01?auto=format&fit=crop&q=80&w=1200'
       }
     ]
@@ -343,6 +348,7 @@ export const WEEKLY_SCHEDULE: DaySchedule[] = [
         audience: 'Parents & Children', 
         description: 'Guided parent-child projects using simple electronics and crafts.', 
         instructor: 'Community Team',
+        lessonId: 'l1',
         imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=1200'
       }
     ]
