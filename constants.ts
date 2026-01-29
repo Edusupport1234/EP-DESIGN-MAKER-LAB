@@ -1,4 +1,3 @@
-
 import { Material, Project, DaySchedule, Lesson, Difficulty } from './types';
 
 const BASE_STORE_URL = "https://www.eptecstore.com/product-category/3d-printer/";
@@ -224,14 +223,14 @@ export const LESSONS: Lesson[] = [
 export const WEEKLY_SCHEDULE: DaySchedule[] = [
   {
     day: 'Monday',
-    date: '29 July 2024',
+    date: '',
     items: [
       { 
         type: 'Recess Time', 
         title: 'Customer Onboarding', 
         time: '10:00 - 10:30 AM', 
         audience: 'New Kit Owners', 
-        description: 'Daily technical walkthrough for customers who recently purchased the Smart World Kit. We cover hardware setup, initial micro:bit flashing, and safety protocols for young makers.', 
+        description: 'Daily technical walkthrough for customers who recently purchased the Smart World Kit.', 
         instructor: 'Mr. Tan',
         imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=1200'
       },
@@ -240,7 +239,7 @@ export const WEEKLY_SCHEDULE: DaySchedule[] = [
         title: 'Robotics CCA', 
         time: '3:00 - 4:30 PM', 
         audience: 'P4-P6 (25 students)', 
-        description: 'Build and program robots using micro:bit and robot kits. This session focuses on sensor integration and logic loops for autonomous movement.', 
+        description: 'Build and program robots using micro:bit and robot kits.', 
         instructor: 'Ms. Lee', 
         lessonId: 'l2',
         imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=1200'
@@ -249,14 +248,14 @@ export const WEEKLY_SCHEDULE: DaySchedule[] = [
   },
   {
     day: 'Tuesday',
-    date: '30 July 2024',
+    date: '',
     items: [
       { 
         type: 'Recess Time', 
         title: 'Product Deep-Dive', 
         time: '10:00 - 10:30 AM', 
         audience: 'All Kit Users', 
-        description: 'Advanced troubleshooting and new feature reveal for our subscription customers. Learn how to extend your kit with recycled materials.', 
+        description: 'Advanced troubleshooting and new feature reveal for our subscribers.', 
         instructor: 'Mrs. Wong',
         imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1200'
       },
@@ -265,7 +264,7 @@ export const WEEKLY_SCHEDULE: DaySchedule[] = [
         title: 'Makers Club CCA', 
         time: '3:00 - 4:30 PM', 
         audience: 'P3-P5 (30 students)', 
-        description: 'Creative making with crafts, cardboard construction, and 3D pens. Unleash your imagination through tactile building blocks.', 
+        description: 'Creative making with crafts, cardboard construction, and 3D pens.', 
         instructor: 'Mr. Tan', 
         lessonId: 'l1',
         imageUrl: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1200'
@@ -274,16 +273,77 @@ export const WEEKLY_SCHEDULE: DaySchedule[] = [
   },
   {
     day: 'Wednesday',
-    date: '31 July 2024',
+    date: '',
     items: [
       { 
         type: 'Workshop', 
         title: 'Advanced Splicing', 
         time: '2:00 - 4:00 PM', 
         audience: 'P6 Students', 
-        description: 'Deep dive into 3D print settings for engineering grade materials. Master technical slicer settings for maximum structural integrity.', 
+        description: 'Deep dive into 3D print settings for engineering grade materials.', 
         instructor: 'Ms. Chen',
+        lessonId: 'l3',
         imageUrl: 'https://images.unsplash.com/photo-1633526543814-9718c8922b7a?auto=format&fit=crop&q=80&w=1200'
+      }
+    ]
+  },
+  {
+    day: 'Thursday',
+    date: '',
+    items: [
+      { 
+        type: 'Workshop', 
+        title: 'IoT Garden Systems', 
+        time: '2:00 - 4:00 PM', 
+        audience: 'P5-P6 Students', 
+        description: 'Building automated watering systems using ESP32 and moisture sensors.', 
+        instructor: 'Mr. Lim',
+        imageUrl: 'https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?auto=format&fit=crop&q=80&w=1200'
+      }
+    ]
+  },
+  {
+    day: 'Friday',
+    date: '',
+    items: [
+      { 
+        type: 'Exhibition', 
+        title: 'Weekly Project Showcase', 
+        time: '3:00 - 5:00 PM', 
+        audience: 'Open to All', 
+        description: 'A casual event where students present their weekly builds and get feedback from peers.', 
+        instructor: 'Lab Mentors',
+        imageUrl: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1200'
+      }
+    ]
+  },
+  {
+    day: 'Saturday',
+    date: '',
+    items: [
+      { 
+        type: 'Competition', 
+        title: 'Rapid Prototype Challenge', 
+        time: '10:00 AM - 1:00 PM', 
+        audience: 'Advanced Makers', 
+        description: '3 hours to design, slice, and print a solution to a secret engineering problem.', 
+        instructor: 'Elite Staff',
+        imageUrl: 'https://images.unsplash.com/photo-1581092341396-d99612958c01?auto=format&fit=crop&q=80&w=1200'
+      }
+    ]
+  },
+  {
+    day: 'Sunday',
+    date: '',
+    items: [
+      { 
+        type: 'Workshop', 
+        title: 'Family Maker Sunday', 
+        time: '11:00 AM - 1:00 PM', 
+        audience: 'Parents & Children', 
+        description: 'Guided parent-child projects using simple electronics and crafts.', 
+        instructor: 'Community Team',
+        imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=1200'
       }
     ]
   }

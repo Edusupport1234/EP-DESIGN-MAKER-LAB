@@ -24,7 +24,32 @@ const App: React.FC = () => {
   // Dynamic Content States
   const [allProjects, setAllProjects] = useState<Project[]>(PROJECTS);
   const [allLessons] = useState<Lesson[]>(LESSONS);
-  const [allSchedule, setAllSchedule] = useState<DaySchedule[]>(WEEKLY_SCHEDULE);
+
+  // Helper to generate schedule for the "Current Week" relative to today
+  const getDynamicSchedule = (): DaySchedule[] => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 (Sun) to 6 (Sat)
+    
+    const dayMap: { [key: string]: number } = {
+      'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
+      'Thursday': 4, 'Friday': 5, 'Saturday': 6
+    };
+
+    return WEEKLY_SCHEDULE.map(day => {
+      const targetDayNum = dayMap[day.day];
+      // Calculate diff to get to the corresponding day of the current week
+      const diff = targetDayNum - dayOfWeek;
+      const targetDate = new Date(today);
+      targetDate.setDate(today.getDate() + diff);
+      
+      return {
+        ...day,
+        date: targetDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+      };
+    });
+  };
+
+  const [allSchedule, setAllSchedule] = useState<DaySchedule[]>(getDynamicSchedule());
 
   // Gamification & Progress States
   const [totalXP, setTotalXP] = useState(0);
