@@ -29,8 +29,10 @@ const App: React.FC = () => {
   // Gamification & Progress States
   const [totalXP, setTotalXP] = useState(0);
   const [completedToday, setCompletedToday] = useState<string[]>([]);
+  const [userLikedProjects, setUserLikedProjects] = useState<string[]>([]);
 
-  const isEditor = user?.email === 'Edusupport@ep-asia.com';
+  // Editor Check: Including the requested Gmail account
+  const isEditor = user?.email === 'Edusupport@ep-asia.com' || user?.email === 'waynexavwillis@gmail.com';
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -78,6 +80,21 @@ const App: React.FC = () => {
       }
       return day;
     }));
+  };
+
+  const toggleProjectLike = (projectId: string) => {
+    const isCurrentlyLiked = userLikedProjects.includes(projectId);
+    
+    setAllProjects(prev => prev.map(p => {
+      if (p.id === projectId) {
+        return { ...p, likes: isCurrentlyLiked ? p.likes - 1 : p.likes + 1 };
+      }
+      return p;
+    }));
+
+    setUserLikedProjects(prev => 
+      isCurrentlyLiked ? prev.filter(id => id !== projectId) : [...prev, projectId]
+    );
   };
 
   const handleCompleteLesson = (lesson: Lesson) => {
@@ -149,9 +166,11 @@ const App: React.FC = () => {
     if (selectedProject) {
       return (
         <ProjectDetailView 
-          project={selectedProject} 
+          project={allProjects.find(p => p.id === selectedProject.id) || selectedProject} 
           onExit={() => setSelectedProject(null)} 
           isEditor={isEditor}
+          isLiked={userLikedProjects.includes(selectedProject.id)}
+          onToggleLike={() => toggleProjectLike(selectedProject.id)}
         />
       );
     }
@@ -179,6 +198,8 @@ const App: React.FC = () => {
           onSelectProject={setSelectedProject} 
           onOpenCreation={() => setIsCreatingProject(true)}
           isEditor={isEditor}
+          userLikedProjects={userLikedProjects}
+          onToggleLike={toggleProjectLike}
         />
       );
       default: return (

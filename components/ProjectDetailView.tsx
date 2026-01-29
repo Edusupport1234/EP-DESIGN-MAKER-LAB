@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Project } from '../types';
 
@@ -7,9 +6,18 @@ interface ProjectDetailViewProps {
   onExit: () => void;
   onRemoveStep?: (index: number) => void;
   isEditor?: boolean;
+  isLiked?: boolean;
+  onToggleLike?: () => void;
 }
 
-const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ project, onExit, onRemoveStep, isEditor = false }) => {
+const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ 
+  project, 
+  onExit, 
+  onRemoveStep, 
+  isEditor = false,
+  isLiked = false,
+  onToggleLike
+}) => {
   const [activeStep, setActiveStep] = useState(0);
 
   if (!project) return null;
@@ -46,8 +54,15 @@ const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ project, onExit, 
           </div>
         </div>
         <div className="flex items-center gap-4">
-           <button className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-xl text-xs font-black hover:bg-pink-100 transition-all">
-             <i className="fa-solid fa-heart"></i>
+           <button 
+             onClick={onToggleLike}
+             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all shadow-sm ${
+               isLiked 
+                 ? 'bg-rose-500 text-white hover:bg-rose-600' 
+                 : 'bg-pink-50 text-pink-600 hover:bg-pink-100'
+             }`}
+           >
+             <i className={`fa-solid fa-heart ${isLiked ? 'animate-bounce' : ''}`}></i>
              {project.likes} Likes
            </button>
         </div>
