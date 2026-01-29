@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import AIAssistant from './components/AIAssistant';
 import LabLayoutView from './components/tabs/LabLayoutView';
 import ScheduleView from './components/tabs/ScheduleView';
@@ -7,8 +7,8 @@ import LessonPathDetail from './components/LessonPathDetail';
 import ProjectDetailView from './components/ProjectDetailView';
 import ProjectCreationModal from './components/ProjectCreationModal';
 import LoginScreen from './components/LoginScreen';
-import { TabType, Project, Lesson, Material, DaySchedule, ScheduleItem, UserInfo } from './types';
-import { PROJECTS, LESSONS, MATERIALS, WEEKLY_SCHEDULE } from './constants';
+import { TabType, Project, Lesson, DaySchedule, ScheduleItem, UserInfo } from './types';
+import { PROJECTS, LESSONS, WEEKLY_SCHEDULE } from './constants';
 import { auth } from './services/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
@@ -17,13 +17,18 @@ const App: React.FC = () => {
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('Lab Layout');
   const [isLearningMode, setIsLearningMode] = useState(false);
-  const [learningLevelIndex, setLearningLevelIndex] = useState(0);
+  const [learningLesson, setLearningLesson] = useState<Lesson | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   
+  // Dynamic Content States
   const [allProjects, setAllProjects] = useState<Project[]>(PROJECTS);
-  const [allLessons, setAllLessons] = useState<Lesson[]>(LESSONS);
+  const [allLessons] = useState<Lesson[]>(LESSONS);
   const [allSchedule, setAllSchedule] = useState<DaySchedule[]>(WEEKLY_SCHEDULE);
+
+  // Gamification & Progress States
+  const [totalXP, setTotalXP] = useState(0);
+  const [completedToday, setCompletedToday] = useState<string[]>([]);
 
   const isEditor = user?.email === 'Edusupport@ep-asia.com';
 
@@ -44,6 +49,20 @@ const App: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
+  // Compute Today's Schedule and Lessons
+  const todayName = useMemo(() => new Date().toLocaleDateString('en-US', { weekday: 'long' }), []);
+  
+  const todayLessons = useMemo(() => {
+    const todaySched = allSchedule.find(s => s.day === todayName);
+    if (!todaySched) return [];
+    
+    // Map schedule items to full lesson objects
+    return todaySched.items
+      .filter(item => item.lessonId)
+      .map(item => allLessons.find(l => l.id === item.lessonId))
+      .filter((l): l is Lesson => !!l);
+  }, [allSchedule, allLessons, todayName]);
+
   const handleAddProject = (newProject: Project) => {
     if (!isEditor) return;
     setAllProjects(prev => [newProject, ...prev]);
@@ -61,32 +80,37 @@ const App: React.FC = () => {
     }));
   };
 
-  const handleAddLessonToGallery = (lesson: Lesson) => {
-    if (!isEditor) {
-      setIsLearningMode(false);
-      return;
+  const handleCompleteLesson = (lesson: Lesson) => {
+    if (!completedToday.includes(lesson.id)) {
+      setCompletedToday(prev => [...prev, lesson.id]);
+      setTotalXP(prev => prev + 50);
     }
-    const newProject: Project = {
-      id: `p-lesson-${Date.now()}`,
-      title: lesson.title,
-      student: user?.name || 'Lab Student',
-      grade: 'Lab Certified',
-      category: lesson.category,
-      description: `Completed the ${lesson.title} mastery pathway.`,
-      fullDescription: lesson.projectGoal,
-      materials: [], 
-      steps: lesson.storySteps || [],
-      likes: 0,
-      imageUrl: lesson.imageUrl,
-      award: 'Course Completed'
-    };
-    setAllProjects(prev => [newProject, ...prev]);
-    setActiveTab('Project Gallery');
+    
+    // If editor, also publish to gallery
+    if (isEditor) {
+      const newProject: Project = {
+        id: `p-lesson-${Date.now()}`,
+        title: lesson.title,
+        student: user?.name || 'Lab Student',
+        grade: 'Lab Certified',
+        category: lesson.category,
+        description: `Completed the ${lesson.title} mastery pathway.`,
+        fullDescription: lesson.projectGoal,
+        materials: [], 
+        steps: lesson.storySteps || [],
+        likes: 0,
+        imageUrl: lesson.imageUrl,
+        award: 'Course Completed'
+      };
+      setAllProjects(prev => [newProject, ...prev]);
+    }
+
     setIsLearningMode(false);
+    setLearningLesson(null);
   };
 
-  const startLearning = () => {
-    setLearningLevelIndex(0);
+  const startLearning = (lesson: Lesson) => {
+    setLearningLesson(lesson);
     setIsLearningMode(true);
   };
 
@@ -107,14 +131,16 @@ const App: React.FC = () => {
   }
 
   const renderContent = () => {
-    if (isLearningMode) {
+    if (isLearningMode && learningLesson) {
+      // Find index of this lesson in our "Today's" or "All" list for the progress bar
+      const idx = allLessons.findIndex(l => l.id === learningLesson.id);
       return (
         <LessonPathDetail 
-          lesson={allLessons[learningLevelIndex]}
-          currentLevelIndex={learningLevelIndex} 
-          onNext={() => setLearningLevelIndex(prev => Math.min(prev + 1, allLessons.length - 1))} 
+          lesson={learningLesson}
+          currentLevelIndex={idx === -1 ? 0 : idx} 
+          onNext={() => {}} // Could implement sequence logic here
           onExit={() => setIsLearningMode(false)}
-          onPublish={handleAddLessonToGallery}
+          onPublish={() => handleCompleteLesson(learningLesson)}
           isEditor={isEditor}
         />
       );
@@ -131,7 +157,14 @@ const App: React.FC = () => {
     }
 
     switch (activeTab) {
-      case 'Lab Layout': return <LabLayoutView onEnroll={startLearning} />;
+      case 'Lab Layout': return (
+        <LabLayoutView 
+          onEnroll={startLearning} 
+          todayLessons={todayLessons}
+          completedToday={completedToday}
+          totalXP={totalXP}
+        />
+      );
       case 'Schedule': return (
         <ScheduleView 
           schedule={allSchedule} 
@@ -148,7 +181,14 @@ const App: React.FC = () => {
           isEditor={isEditor}
         />
       );
-      default: return <LabLayoutView onEnroll={startLearning} />;
+      default: return (
+        <LabLayoutView 
+          onEnroll={startLearning} 
+          todayLessons={todayLessons}
+          completedToday={completedToday}
+          totalXP={totalXP}
+        />
+      );
     }
   };
 
@@ -156,7 +196,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f3f1ff] pb-32 grid-bg">
-      {/* Redesigned Floating Header with Soft UI elements */}
       <header className={`pt-12 px-8 max-w-[1400px] mx-auto transition-all duration-700 ${isDetailView ? 'opacity-0 -translate-y-full absolute' : 'opacity-100 translate-y-0'}`}>
         <div className="flex items-center justify-between mb-12">
           <div className="flex items-center gap-8">
@@ -202,7 +241,6 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Pill Navigation Bar */}
         <div className="flex items-center justify-center lg:justify-start">
           <nav className="bg-slate-900/95 backdrop-blur-xl p-2 rounded-full flex items-center gap-1 shadow-2xl shadow-indigo-900/10">
             {[
@@ -227,7 +265,6 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Container with highly rounded corners */}
       <main className={`max-w-[1400px] mx-auto px-8 transition-all duration-700 ${isDetailView ? 'mt-8' : 'mt-16'}`}>
         <div className={`bg-white rounded-[4rem] shadow-[0_50px_120px_rgba(99,102,241,0.04)] border border-white/50 min-h-[750px] relative overflow-hidden transition-all duration-500 ${isDetailView ? 'p-0' : 'p-12 md:p-20'}`}>
           {renderContent()}
