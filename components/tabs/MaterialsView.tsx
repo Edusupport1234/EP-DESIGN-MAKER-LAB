@@ -6,9 +6,10 @@ import MaterialCreationModal from '../MaterialCreationModal';
 interface MaterialsViewProps {
   materials: Material[];
   onAddMaterial: (material: Material) => void;
+  isEditor?: boolean;
 }
 
-const MaterialsView: React.FC<MaterialsViewProps> = ({ materials, onAddMaterial }) => {
+const MaterialsView: React.FC<MaterialsViewProps> = ({ materials, onAddMaterial, isEditor = false }) => {
   const [activeCategory, setActiveCategory] = useState('All Products');
   const [searchQuery, setSearchQuery] = useState('');
   const [savedInterests, setSavedInterests] = useState<string[]>([]); // Array of material IDs
@@ -115,7 +116,7 @@ const MaterialsView: React.FC<MaterialsViewProps> = ({ materials, onAddMaterial 
 
             <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
               <p className="text-[10px] text-slate-400 font-bold leading-relaxed">
-                Don't see what you need? Add a custom item using the floating tool below.
+                {isEditor ? "Staff Mode: You can register new materials to the official catalog." : "Don't see what you need? Login to register custom items."}
               </p>
             </div>
           </div>
@@ -185,15 +186,17 @@ const MaterialsView: React.FC<MaterialsViewProps> = ({ materials, onAddMaterial 
         </main>
       </div>
 
-      {/* Floating Add Product Button */}
-      <div className="fixed bottom-24 right-10 z-[100]">
-        <button 
-          onClick={() => setIsCreatingMaterial(true)}
-          className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl shadow-[0_20px_50px_rgba(37,99,235,0.3)] transition-all duration-300 active:scale-90 bg-gradient-to-tr from-blue-600 to-indigo-600 hover:rotate-90"
-        >
-          <i className="fa-solid fa-plus"></i>
-        </button>
-      </div>
+      {/* Floating Add Product Button - ONLY FOR EDITORS */}
+      {isEditor && (
+        <div className="fixed bottom-24 right-10 z-[100] animate-in zoom-in duration-300">
+          <button 
+            onClick={() => setIsCreatingMaterial(true)}
+            className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl shadow-[0_20px_50px_rgba(37,99,235,0.3)] transition-all duration-300 active:scale-90 bg-gradient-to-tr from-blue-600 to-indigo-600 hover:rotate-90"
+          >
+            <i className="fa-solid fa-plus"></i>
+          </button>
+        </div>
+      )}
 
       {/* Saved Interests Cart (Drawer Style) */}
       {isCartOpen && (

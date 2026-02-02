@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import AIAssistant from './components/AIAssistant';
 import LabLayoutView from './components/tabs/LabLayoutView';
@@ -9,38 +10,40 @@ import ProjectCreationModal from './components/ProjectCreationModal';
 import LoginScreen from './components/LoginScreen';
 import { TabType, Project, Lesson, DaySchedule, ScheduleItem, UserInfo, Difficulty } from './types';
 import { PROJECTS, LESSONS, WEEKLY_SCHEDULE } from './constants';
-import { auth } from './services/firebase';
+import { auth, db, ref, onValue, push, set } from './services/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
+
+interface LogEntry {
+  id: string;
+  title: string;
+  timestamp: string;
+}
 
 const App: React.FC = () => {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
+  const [showLogin, setShowLogin] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('Lab Layout');
   const [isLearningMode, setIsLearningMode] = useState(false);
   const [learningLesson, setLearningLesson] = useState<Lesson | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   
-  // Dynamic Content States
   const [allProjects, setAllProjects] = useState<Project[]>(PROJECTS);
   const [allLessons] = useState<Lesson[]>(LESSONS);
 
-  // Helper to generate schedule for the "Current Week" relative to today
-  const getDynamicSchedule = (): DaySchedule[] => {
+  const getDynamicSchedule = (sourceSchedule: DaySchedule[]): DaySchedule[] => {
     const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 (Sun) to 6 (Sat)
-    
+    const dayOfWeek = today.getDay();
     const dayMap: { [key: string]: number } = {
       'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
       'Thursday': 4, 'Friday': 5, 'Saturday': 6
     };
-
-    return WEEKLY_SCHEDULE.map(day => {
+    return sourceSchedule.map(day => {
       const targetDayNum = dayMap[day.day];
       const diff = targetDayNum - dayOfWeek;
       const targetDate = new Date(today);
       targetDate.setDate(today.getDate() + diff);
-      
       return {
         ...day,
         date: targetDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -48,14 +51,45 @@ const App: React.FC = () => {
     });
   };
 
-  const [allSchedule, setAllSchedule] = useState<DaySchedule[]>(getDynamicSchedule());
-
-  // Gamification & Progress States
+  const [allSchedule, setAllSchedule] = useState<DaySchedule[]>(getDynamicSchedule(WEEKLY_SCHEDULE));
   const [totalXP, setTotalXP] = useState(0);
   const [completedToday, setCompletedToday] = useState<string[]>([]);
+  const [activityLog, setActivityLog] = useState<LogEntry[]>([]);
   const [userLikedProjects, setUserLikedProjects] = useState<string[]>([]);
+  const [streak, setStreak] = useState(12); // Default streak for UI demonstration
 
-  const isEditor = user?.email === 'Edusupport@ep-asia.com' || user?.email === 'waynexavwillis@gmail.com';
+  const isEditor = !!user;
+
+  // Firebase Realtime Sync
+  useEffect(() => {
+    const projectsRef = ref(db, 'projects');
+    const scheduleRef = ref(db, 'schedule');
+
+    const unsubProjects = onValue(projectsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const projectList = Object.keys(data).map(key => ({ ...data[key], id: key }));
+        setAllProjects([...PROJECTS, ...projectList.reverse()]);
+      }
+    });
+
+    const unsubSchedule = onValue(scheduleRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        // Data is stored as { dayName: [items] }
+        const mergedSchedule = WEEKLY_SCHEDULE.map(day => ({
+          ...day,
+          items: data[day.day] ? [...day.items, ...data[day.day]] : day.items
+        }));
+        setAllSchedule(getDynamicSchedule(mergedSchedule));
+      }
+    });
+
+    return () => {
+      unsubProjects();
+      unsubSchedule();
+    };
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -66,6 +100,7 @@ const App: React.FC = () => {
           picture: firebaseUser.photoURL || '',
           sub: firebaseUser.uid
         });
+        setShowLogin(false);
       } else {
         setUser(null);
       }
@@ -83,11 +118,8 @@ const App: React.FC = () => {
     return todaySched.items
       .filter(item => item.type === 'Workshop' || item.type === 'CCA')
       .map(item => {
-        // Search in both database types
         const sourceLesson = allLessons.find(l => l.id === item.lessonId);
         const sourceProject = allProjects.find(p => p.id === item.lessonId);
-        
-        // Return a unified lesson object
         return {
           id: item.lessonId || `manual-${item.title}`,
           title: item.title,
@@ -106,42 +138,28 @@ const App: React.FC = () => {
       });
   }, [allSchedule, allLessons, allProjects, todayName]);
 
-  const handleAddProject = (newProject: Project) => {
-    if (!isEditor) return;
-    setAllProjects(prev => [newProject, ...prev]);
-    setActiveTab('Project Gallery');
-    setIsCreatingProject(false);
-  };
+  // Calculate Dynamic Productivity
+  const productivity = useMemo(() => {
+    if (todayLessons.length === 0) return 0;
+    const completedCount = todayLessons.filter(l => completedToday.includes(l.id)).length;
+    return Math.round((completedCount / todayLessons.length) * 100);
+  }, [todayLessons, completedToday]);
 
-  const handleAddScheduleItem = (dayName: string, item: ScheduleItem) => {
-    if (!isEditor) return;
-    setAllSchedule(prev => prev.map(day => {
-      if (day.day === dayName) {
-        return { ...day, items: [...day.items, item] };
-      }
-      return day;
-    }));
-  };
-
-  const toggleProjectLike = (projectId: string) => {
-    const isCurrentlyLiked = userLikedProjects.includes(projectId);
-    setAllProjects(prev => prev.map(p => {
-      if (p.id === projectId) {
-        return { ...p, likes: isCurrentlyLiked ? p.likes - 1 : p.likes + 1 };
-      }
-      return p;
-    }));
-    setUserLikedProjects(prev => 
-      isCurrentlyLiked ? prev.filter(id => id !== projectId) : [...prev, projectId]
-    );
-  };
-
-  const handleCompleteLesson = (lesson: Lesson) => {
+  const handleCompleteLesson = async (lesson: Lesson) => {
     if (!completedToday.includes(lesson.id)) {
       setCompletedToday(prev => [...prev, lesson.id]);
       setTotalXP(prev => prev + 50);
+      setActivityLog(prev => [
+        {
+          id: `log-${Date.now()}`,
+          title: lesson.title,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        },
+        ...prev
+      ]);
     }
     
+    // Auto-publish project to Firebase on completion if logged in
     if (isEditor) {
       const newProject: Project = {
         id: `p-lesson-${Date.now()}`,
@@ -157,33 +175,28 @@ const App: React.FC = () => {
         imageUrl: lesson.imageUrl,
         award: 'Course Completed'
       };
-      setAllProjects(prev => [newProject, ...prev]);
+      const projectsRef = ref(db, 'projects');
+      await push(projectsRef, newProject);
     }
 
     setIsLearningMode(false);
     setLearningLesson(null);
   };
 
-  const startLearning = (lesson: Lesson) => {
-    setLearningLesson(lesson);
-    setIsLearningMode(true);
+  const handleAddScheduleItem = async (dayName: string, item: ScheduleItem) => {
+    if (!isEditor) return;
+    const scheduleDayRef = ref(db, `schedule/${dayName}`);
+    const currentDay = allSchedule.find(d => d.day === dayName);
+    const existingDbItems = currentDay ? currentDay.items.filter(i => !WEEKLY_SCHEDULE.find(wd => wd.day === dayName)?.items.some(wi => wi.title === i.title)) : [];
+    
+    await set(scheduleDayRef, [...existingDbItems, item]);
   };
 
-  const handleSignOut = async () => {
-    try { await signOut(auth); } catch (error) { console.error('Sign-out error:', error); }
+  const handleProjectSubmit = async (project: Project) => {
+    const projectsRef = ref(db, 'projects');
+    await push(projectsRef, project);
+    setIsCreatingProject(false);
   };
-
-  if (loadingAuth) {
-    return (
-      <div className="min-h-screen bg-[#f3f1ff] flex items-center justify-center">
-        <i className="fa-solid fa-circle-notch animate-spin text-indigo-500 text-4xl"></i>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <LoginScreen />;
-  }
 
   const renderContent = () => {
     if (isLearningMode && learningLesson) {
@@ -207,7 +220,12 @@ const App: React.FC = () => {
           onExit={() => setSelectedProject(null)} 
           isEditor={isEditor}
           isLiked={userLikedProjects.includes(selectedProject.id)}
-          onToggleLike={() => toggleProjectLike(selectedProject.id)}
+          onToggleLike={() => {
+            const projectId = selectedProject.id;
+            const isCurrentlyLiked = userLikedProjects.includes(projectId);
+            setAllProjects(prev => prev.map(p => p.id === projectId ? { ...p, likes: isCurrentlyLiked ? p.likes - 1 : p.likes + 1 } : p));
+            setUserLikedProjects(prev => isCurrentlyLiked ? prev.filter(id => id !== projectId) : [...prev, projectId]);
+          }}
         />
       );
     }
@@ -215,10 +233,14 @@ const App: React.FC = () => {
     switch (activeTab) {
       case 'Lab Layout': return (
         <LabLayoutView 
-          onEnroll={startLearning} 
+          onEnroll={(l) => { setLearningLesson(l); setIsLearningMode(true); }} 
           todayLessons={todayLessons}
           completedToday={completedToday}
           totalXP={totalXP}
+          productivity={productivity}
+          streak={streak}
+          activityLog={activityLog}
+          isEditor={isEditor}
         />
       );
       case 'Schedule': return (
@@ -237,73 +259,98 @@ const App: React.FC = () => {
           onOpenCreation={() => setIsCreatingProject(true)}
           isEditor={isEditor}
           userLikedProjects={userLikedProjects}
-          onToggleLike={toggleProjectLike}
-        />
-      );
-      default: return (
-        <LabLayoutView 
-          onEnroll={startLearning} 
-          todayLessons={todayLessons}
-          completedToday={completedToday}
-          totalXP={totalXP}
+          onToggleLike={(projectId) => {
+            const isCurrentlyLiked = userLikedProjects.includes(projectId);
+            setAllProjects(prev => prev.map(p => p.id === projectId ? { ...p, likes: isCurrentlyLiked ? p.likes - 1 : p.likes + 1 } : p));
+            setUserLikedProjects(prev => isCurrentlyLiked ? prev.filter(id => id !== projectId) : [...prev, projectId]);
+          }}
         />
       );
     }
   };
 
-  const isDetailView = isLearningMode || selectedProject;
+  if (loadingAuth) {
+    return (
+      <div className="min-h-screen bg-[#f3f1ff] flex items-center justify-center">
+        <i className="fa-solid fa-circle-notch animate-spin text-indigo-500 text-4xl"></i>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f3f1ff] pb-32 grid-bg">
-      <header className={`pt-12 px-8 max-w-[1400px] mx-auto transition-all duration-700 ${isDetailView ? 'opacity-0 -translate-y-full absolute' : 'opacity-100 translate-y-0'}`}>
-        <div className="flex items-center justify-between mb-12">
-          <div className="flex items-center gap-8">
-            <div className="w-20 h-20 bg-white rounded-[2rem] shadow-2xl border border-white flex items-center justify-center p-4">
+      {showLogin && <LoginScreen onBack={() => setShowLogin(false)} />}
+      
+      <header className={`pt-12 px-8 max-w-[1400px] mx-auto transition-all duration-700 ${isLearningMode || selectedProject ? 'opacity-0 -translate-y-full absolute' : 'opacity-100 translate-y-0'}`}>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-6">
+            <div className="w-16 h-16 bg-white rounded-2xl shadow-xl border border-white flex items-center justify-center p-3">
               <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStOQQrCJ8rmaj-TLbkMU6TFRj2XsSLnDXzEQ&s" alt="Logo" className="w-full h-full object-contain" />
             </div>
             <div>
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-none">Design Maker Lab</h1>
-              <div className="flex items-center gap-4 mt-3">
-                 <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em]">Mastery Workspace</span>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none uppercase">Design Maker Lab</h1>
+              <div className="flex items-center gap-3 mt-1">
+                 <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest">Mastery Workspace</span>
                  <div className="w-1.5 h-1.5 bg-indigo-200 rounded-full"></div>
-                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">{isEditor ? 'Staff Console' : 'Student Hub'}</span>
+                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{isEditor ? 'Staff Console' : 'Guest Viewer'}</span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-6">
-             <div className="bg-white/80 backdrop-blur-md px-6 py-4 rounded-[2.5rem] border border-white shadow-xl flex items-center gap-5">
-                <div className="text-right hidden sm:block">
-                   <div className="text-xs font-black text-slate-900 leading-none">{user.name}</div>
-                   <div className="text-[9px] font-black text-indigo-400 mt-1 uppercase tracking-widest">{user.email}</div>
-                </div>
-                <div className="w-12 h-12 rounded-full border-2 border-indigo-100 p-0.5 shadow-sm overflow-hidden">
-                   {user.picture ? <img src={user.picture} alt={user.name} className="w-full h-full rounded-full object-cover" /> : <div className="w-full h-full rounded-full bg-indigo-50 flex items-center justify-center text-indigo-300"><i className="fa-solid fa-user"></i></div>}
-                </div>
-             </div>
-             <button onClick={handleSignOut} className="w-14 h-14 rounded-3xl bg-white border border-white flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all shadow-xl active:scale-90"><i className="fa-solid fa-right-from-bracket text-lg"></i></button>
+          
+          <div className="flex items-center gap-4">
+             {user ? (
+               <div className="flex items-center gap-4">
+                 <div className="bg-white/90 backdrop-blur-md px-5 py-3 rounded-full border border-white shadow-lg flex items-center gap-4">
+                    <div className="text-right hidden sm:block">
+                       <div className="text-[10px] font-black text-slate-900 leading-none">{user.name}</div>
+                       <div className="text-[8px] font-black text-indigo-400 mt-1 uppercase tracking-tighter">{user.email}</div>
+                    </div>
+                    <div className="w-10 h-10 rounded-full border border-indigo-100 p-0.5 shadow-sm overflow-hidden">
+                       {user.picture ? <img src={user.picture} alt={user.name} className="w-full h-full rounded-full object-cover" /> : <div className="w-full h-full rounded-full bg-indigo-50 flex items-center justify-center text-indigo-300"><i className="fa-solid fa-user text-xs"></i></div>}
+                    </div>
+                 </div>
+                 <button onClick={() => signOut(auth)} className="w-12 h-12 rounded-2xl bg-white border border-white flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all shadow-lg active:scale-90"><i className="fa-solid fa-right-from-bracket"></i></button>
+               </div>
+             ) : (
+               <button 
+                 onClick={() => setShowLogin(true)}
+                 className="px-8 py-4 bg-slate-950 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-indigo-600 transition-all active:scale-95 flex items-center gap-3"
+               >
+                 <i className="fa-solid fa-user-lock"></i>
+                 Login to Lab
+               </button>
+             )}
           </div>
         </div>
-        <div className="flex items-center justify-center lg:justify-start">
-          <nav className="bg-slate-900/95 backdrop-blur-xl p-2 rounded-full flex items-center gap-1 shadow-2xl shadow-indigo-900/10">
+
+        {/* PILL NAVIGATION TABS */}
+        <div className="flex items-center justify-center mt-6">
+          <nav className="bg-[#1e293b] p-2 pill-nav flex items-center gap-1 shadow-2xl">
             {[
-              { id: 'Lab Layout', icon: 'fa-cube', color: 'bg-[#ffde59] text-slate-900' },
-              { id: 'Schedule', icon: 'fa-calendar-day', color: 'bg-indigo-500 text-white' },
-              { id: 'Project Gallery', icon: 'fa-shapes', color: 'bg-purple-600 text-white' }
+              { id: 'Lab Layout', label: 'Lab Layout', icon: 'fa-cube' },
+              { id: 'Schedule', label: 'Schedule', icon: 'fa-calendar-days' },
+              { id: 'Project Gallery', label: 'Project Gallery', icon: 'fa-shapes' }
             ].map((tab) => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id as TabType)} className={`px-10 py-5 rounded-full font-black text-[11px] uppercase tracking-widest flex items-center gap-3 transition-all ${activeTab === tab.id ? tab.color + ' shadow-lg scale-105' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}>
+              <button 
+                key={tab.id} 
+                onClick={() => setActiveTab(tab.id as any)} 
+                className={`px-8 py-3.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-2.5 transition-all ${activeTab === tab.id ? 'bg-[#ffde59] text-slate-900 shadow-lg' : 'text-slate-400 hover:text-white'}`}
+              >
                 <i className={`fa-solid ${tab.icon} text-xs`}></i>
-                {tab.id}
+                {tab.label}
               </button>
             ))}
           </nav>
         </div>
       </header>
-      <main className={`max-w-[1400px] mx-auto px-8 transition-all duration-700 ${isDetailView ? 'mt-8' : 'mt-16'}`}>
-        <div className={`bg-white rounded-[4rem] shadow-[0_50px_120px_rgba(99,102,241,0.04)] border border-white/50 min-h-[750px] relative overflow-hidden transition-all duration-500 ${isDetailView ? 'p-0' : 'p-12 md:p-20'}`}>
+
+      <main className="max-w-[1400px] mx-auto px-8 mt-12">
+        <div className={`bg-white rounded-organic shadow-2xl border border-white/50 min-h-[750px] overflow-hidden ${isLearningMode || selectedProject ? 'p-0' : 'p-12 md:p-16'}`}>
           {renderContent()}
         </div>
       </main>
-      {isCreatingProject && isEditor && <ProjectCreationModal onClose={() => setIsCreatingProject(false)} onSubmit={handleAddProject} />}
+
+      {isCreatingProject && isEditor && <ProjectCreationModal onClose={() => setIsCreatingProject(false)} onSubmit={handleProjectSubmit} />}
       <AIAssistant />
     </div>
   );

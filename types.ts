@@ -35,23 +35,22 @@ export interface Lesson {
   storySteps?: LessonStep[];
 }
 
+export interface ProjectMaterial {
+  name: string;
+  quantity: string;
+  icon?: string;
+}
+
+// Added Material interface to define the structure of lab equipment and inventory items
 export interface Material {
   id: string;
   name: string;
   category: string;
   quantity: string;
-  status: 'In Stock' | 'Low Stock';
+  status: string;
   imageUrl: string;
+  description: string;
   externalUrl: string;
-  description?: string;
-  commonUses?: string[];
-  icon?: string;
-}
-
-export interface ProjectMaterial {
-  name: string;
-  quantity: string;
-  icon?: string;
 }
 
 export interface Project {

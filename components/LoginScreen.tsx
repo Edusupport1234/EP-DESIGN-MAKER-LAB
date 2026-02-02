@@ -1,7 +1,12 @@
+
 import React, { useState } from 'react';
 import { signInWithGoogle } from '../services/firebase';
 
-const LoginScreen: React.FC = () => {
+interface LoginScreenProps {
+  onBack?: () => void;
+}
+
+const LoginScreen: React.FC<LoginScreenProps> = ({ onBack }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,13 +23,13 @@ const LoginScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f3f1ff] flex flex-col items-center justify-center p-6 relative overflow-hidden grid-bg">
+    <div className="fixed inset-0 z-[200] bg-indigo-900/40 backdrop-blur-xl flex flex-col items-center justify-center p-6 animate-in fade-in duration-500 overflow-hidden">
       {/* Background blobs for depth and soft UI aesthetic */}
       <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-indigo-200/40 rounded-full blur-[100px]"></div>
       <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-200/30 rounded-full blur-[120px]"></div>
       
       {/* Floating Header Branding */}
-      <div className="mb-8 flex flex-col items-center">
+      <div className="mb-8 flex flex-col items-center relative z-10">
         <div className="w-16 h-16 bg-white rounded-3xl shadow-xl border border-white flex items-center justify-center mb-6">
           <img 
             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStOQQrCJ8rmaj-TLbkMU6TFRj2XsSLnDXzEQ&s" 
@@ -35,69 +40,45 @@ const LoginScreen: React.FC = () => {
         <div className="bg-[#ffde59] text-slate-900 px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-sm mb-4">
           Design Maker Lab
         </div>
-        <h1 className="text-4xl font-black text-slate-900 tracking-tight text-center max-w-sm">
+        <h1 className="text-4xl font-black text-white tracking-tight text-center max-w-sm">
           Welcome to the Future of Making
         </h1>
       </div>
 
-      <div className="w-full max-w-[480px] bg-white rounded-[3.5rem] p-10 md:p-14 shadow-[0_40px_100px_rgba(99,102,241,0.06)] border border-white relative overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
+      <div className="w-full max-w-[480px] bg-white rounded-[3.5rem] p-10 md:p-14 shadow-[0_40px_100px_rgba(0,0,0,0.2)] border border-white relative overflow-hidden animate-in slide-in-from-bottom-8 duration-700">
         
         <div className="space-y-8 relative z-10">
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
-              <input 
-                type="email" 
-                placeholder="student@makerlab.com"
-                className="w-full px-7 py-5 bg-[#f8f7ff] border border-slate-100 rounded-[2rem] focus:outline-none focus:ring-8 focus:ring-indigo-500/5 focus:border-indigo-200 transition-all text-sm font-medium"
-              />
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Account Credentials</label>
+              <p className="text-xs text-slate-500 font-medium px-1">Please use the secure Google authentication portal to access the staff console.</p>
             </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
-              <input 
-                type="password" 
-                placeholder="••••••••••••"
-                className="w-full px-7 py-5 bg-[#f8f7ff] border border-slate-100 rounded-[2rem] focus:outline-none focus:ring-8 focus:ring-indigo-500/5 focus:border-indigo-200 transition-all text-sm font-medium"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-[11px] px-1">
-             <label className="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 rounded-lg border-slate-200 text-indigo-500 focus:ring-indigo-500" />
-                <span className="text-slate-500 font-bold">Stay Logged In</span>
-             </label>
-             <button className="text-slate-900 font-black uppercase tracking-widest hover:text-indigo-600 transition-colors">Recover Account</button>
           </div>
 
           <div className="space-y-4 pt-4">
             <button 
-              disabled={true}
-              className="w-full py-6 bg-slate-950 text-white rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl hover:bg-slate-800 transition-all opacity-40 cursor-not-allowed"
-            >
-              Sign In
-            </button>
-
-            <div className="relative py-4 flex items-center justify-center">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
-              <span className="relative bg-white px-5 text-[10px] font-black text-slate-200 uppercase tracking-[0.3em]">or connect with</span>
-            </div>
-
-            <button 
               onClick={handleSignIn}
               disabled={loading}
-              className="w-full py-5 px-6 bg-white text-slate-900 rounded-[2rem] font-black text-[11px] uppercase tracking-widest border border-slate-200 flex items-center justify-center gap-4 hover:bg-slate-50 active:scale-95 transition-all disabled:opacity-50 shadow-sm"
+              className="w-full py-6 px-6 bg-slate-950 text-white rounded-[2rem] font-black text-[11px] uppercase tracking-widest flex items-center justify-center gap-4 hover:bg-slate-800 active:scale-95 transition-all disabled:opacity-50 shadow-2xl"
             >
               {loading ? (
                 <i className="fa-solid fa-circle-notch animate-spin"></i>
               ) : (
                 <>
                   <img src="https://www.google.com/favicon.ico" className="w-4 h-4" alt="Google" />
-                  Sign in with Google
+                  Continue with Google
                 </>
               )}
             </button>
+
+            {onBack && (
+              <button 
+                onClick={onBack}
+                className="w-full py-4 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-indigo-600 transition-colors"
+              >
+                Continue as Guest Viewer
+              </button>
+            )}
           </div>
 
           {error && (
@@ -108,10 +89,10 @@ const LoginScreen: React.FC = () => {
         </div>
       </div>
 
-      <footer className="mt-12 text-slate-400 text-[10px] font-black uppercase tracking-[0.4em] flex items-center gap-8">
+      <footer className="mt-12 text-white/40 text-[10px] font-black uppercase tracking-[0.4em] flex items-center gap-8 relative z-10">
         <span>EST. 2024</span>
-        <div className="w-2 h-2 bg-indigo-300 rounded-full animate-pulse"></div>
-        <span>SYSTEM ALPHA V4</span>
+        <div className="w-2 h-2 bg-white/20 rounded-full"></div>
+        <span>SECURE LOGIN SYSTEM</span>
       </footer>
     </div>
   );

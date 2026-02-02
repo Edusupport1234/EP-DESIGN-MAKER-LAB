@@ -1,6 +1,7 @@
 
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { getDatabase, ref, set, push, onValue, off } from 'firebase/database';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -17,9 +18,13 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export const db = getDatabase(app);
 export const googleProvider = new GoogleAuthProvider();
 
 // Sign in with Google helper using popup
 export const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
+
+// DB Helpers
+export { ref, set, push, onValue, off };
 
 export default app;
